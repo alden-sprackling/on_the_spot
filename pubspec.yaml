@@ -18,5 +18,11 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: Bobby Jones
+      fonts:
+        - asset: assets/fonts/Bobby Rough Soft Outline.ttf
+        - asset: assets/fonts/Bobby Rough Soft.ttf
   assets:
-    - assets/profile_pictures/
+    - lib/assets/profile_pictures/
+    - lib/assets/fonts/
