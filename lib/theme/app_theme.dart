@@ -9,11 +9,11 @@ class AppTheme {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: IconThemeData(
-          color: AppColors.lightGrey,
+          color: AppColors.iconColor,
         ),
       ),
       scaffoldBackgroundColor: Colors.white,
-      textTheme: GoogleFonts.chewyTextTheme(),
+      textTheme: GoogleFonts.grandstanderTextTheme(),
     );
   }
 }

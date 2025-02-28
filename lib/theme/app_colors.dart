@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color lightGrey = Color.fromARGB(205, 205, 205, 205);
+  static const Color iconColor = Color.fromARGB(255, 205, 205, 205);
+  static const Color hintTextColor = Color.fromARGB(255, 205, 205, 205);
+  static const Color primaryColor = Color.fromARGB(255, 254, 174, 87);
+  static const Color secondaryColor = Color.fromARGB(255, 255, 135, 105);
+
+  static const Color confirmationGreen = Color.fromARGB(255, 42, 188, 78);
+  static const Color warningYellow = Color.fromARGB(255, 255, 208, 0);
+  static const Color errorRed = Color.fromARGB(255, 244, 64, 64);
 
   static const Color lightOrange = Color(0xFFFECF9E);
   static const Color lightRed = Color(0xFFE89A9A);
