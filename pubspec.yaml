@@ -9,6 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  google_fonts: ^6.2.1
   provider: ^6.1.2
 
 dev_dependencies:
@@ -18,11 +19,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  fonts:
-    - family: Bobby Jones
-      fonts:
-        - asset: assets/fonts/Bobby Rough Soft Outline.ttf
-        - asset: assets/fonts/Bobby Rough Soft.ttf
-  assets:
-    - lib/assets/profile_pictures/
-    - lib/assets/fonts/
