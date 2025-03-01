@@ -58,7 +58,7 @@ class Button extends StatelessWidget {
             child: Text(
               secondaryButtonText!,
               style: TextStyle(
-                fontSize: 18, // Fixed 24px font size
+                fontSize: 24, // Fixed 24px font size
                 fontWeight: FontWeight.bold,
                 color: AppColors.secondaryColor, // No background, black text
               ),

@@ -27,7 +27,7 @@ class Header extends StatelessWidget {
           textAlign: TextAlign.center,
         ),
         if (subtext != null && subtext!.isNotEmpty) ...[
-          SizedBox(height: 20), // Space between header and subtext
+          SizedBox(height: 24), // Space between header and subtext
           Text(
             subtext!,
             style: GoogleFonts.grandstander(

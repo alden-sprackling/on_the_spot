@@ -29,7 +29,7 @@ class InputField extends StatelessWidget {
       children: [
         if (labelText != null && labelText!.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.only(right: 48, bottom: 20, left: 48),
+            padding: const EdgeInsets.only(right: 48, bottom: 24, left: 48),
             child: Text(
               labelText!,
               style: GoogleFonts.grandstander(
