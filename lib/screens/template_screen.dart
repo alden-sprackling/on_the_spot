@@ -35,29 +35,31 @@ class TemplateScreenState extends State<TemplateScreen> {
           );
         }).toList(),
       ),
-      body: Stack(
-        children: [
-          GestureDetector(
-            behavior: HitTestBehavior.opaque, // Ensures taps on empty space register
-            onTap: () {
-              FocusScope.of(context).requestFocus(FocusNode()); // Forces keyboard to close
-            },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: widget.columnWidgets,
+      body: Center(
+        child: Stack(
+          children: [
+            GestureDetector(
+              behavior: HitTestBehavior.opaque, // Ensures taps on empty space register
+              onTap: () {
+                FocusScope.of(context).requestFocus(FocusNode()); // Forces keyboard to close
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: widget.columnWidgets,
+              ),
             ),
-          ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: widget.messageBanners,
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: widget.messageBanners,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

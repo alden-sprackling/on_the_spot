@@ -28,6 +28,7 @@ class AuthScreenState extends State<AuthScreen> {
         icon: Icon(Icons.arrow_back),
       ),
       actions: null,
+      messageBanners: appState.messageBanners,
       columnWidgets: [
         Expanded(
           flex: 1,
@@ -45,9 +46,10 @@ class AuthScreenState extends State<AuthScreen> {
         Expanded(
           flex: 1,
           child: Button(
-            text: "Continue >",
+            text: "CONTINUE >",
             onPressed: () {
               try {
+                Navigator.pushNamed(context, '/appearance'); // Navigate to the next screen
               } catch (e) {
                 appState.showMessage("$e", MessageType.error, showForLimitedTime: true);
               }

@@ -28,18 +28,20 @@ class Header extends StatelessWidget {
         ),
         if (subtext != null && subtext!.isNotEmpty) ...[
           SizedBox(height: 24), // Space between header and subtext
-          Text(
-            subtext!,
-            style: GoogleFonts.grandstander(
-              fontSize: 24, // Subtext at 24px
-              fontWeight: FontWeight.w500,
-              color: color,
+          Padding(
+            padding: const EdgeInsets.only(right: 48, bottom: 24, left: 48),
+            child: Text(
+              subtext!,
+              style: GoogleFonts.grandstander(
+                fontSize: 24, // Subtext at 24px
+                fontWeight: FontWeight.w500,
+                color: color,
+              ),
+              textAlign: TextAlign.left,
             ),
-            textAlign: TextAlign.left,
           ),
         ],
       ],
     );
   }
 }
-

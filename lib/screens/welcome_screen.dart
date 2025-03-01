@@ -47,7 +47,7 @@ class WelcomeScreenState extends State<WelcomeScreen> {
         Expanded(
           flex: 1,
           child: Button(
-            text: "Continue >",
+            text: "CONTINUE >",
             onPressed: () {
               try {
                 Navigator.pushNamed(context, '/auth'); // Navigate to the next screen
