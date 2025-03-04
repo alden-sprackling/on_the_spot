@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:on_the_spot/widgets/info_icon_button.dart';
+import 'package:on_the_spot/widgets/player.dart';
+import 'package:on_the_spot/widgets/settings_icon_button.dart';
 import '/widgets/button.dart';
 import '/theme/app_colors.dart';
 import 'package:provider/provider.dart';
-import '/providers/app_state.dart';
+import '../providers/message_provider.dart';
 import 'template_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -16,50 +19,47 @@ class HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appState = Provider.of<AppState>(context);
+    final messageProvider = Provider.of<MessageProvider>(context);
 
     return TemplateScreen(
       leading: null,
       actions: [
-        IconButton(
-          icon: Icon(Icons.info_outline),
-          onPressed: () {
-        // Add functionality here
-          },
-        ),
-        IconButton(
-          icon: Icon(Icons.settings_outlined),
-          onPressed: () {
-        // Add functionality here
-          },
-        ),
+        InfoIconButton(),
+        SettingsIconButton(),
       ],
-      messageBanners: appState.messageBanners,
+      messageBanners: messageProvider.messageBanners,
       columnWidgets: [
         Expanded(
-          flex: 1,
-          child: Button(
-            text: "HOST",
-            onPressed: () {
-              try {
-              } catch (e) {
-                appState.showMessage("$e", MessageType.error, showForLimitedTime: true);
-              }
-            },
-            backgroundColor: AppColors.secondaryColor,
-          ),
+          flex: 0,
+          child: Player(),
         ),
         Expanded(
           flex: 1,
+          child: SizedBox()),
+        Expanded(
+          flex: 0,
           child: Button(
             text: "JOIN",
             onPressed: () {
               try {
               } catch (e) {
-                appState.showMessage("$e", MessageType.error, showForLimitedTime: true);
+                messageProvider.showMessage("$e", MessageType.error, showForLimitedTime: true);
               }
             },
             backgroundColor: AppColors.primaryColor,
+          ),
+        ),
+        Expanded(
+          flex: 0,
+          child: Button(
+            text: "HOST",
+            onPressed: () {
+              try {
+              } catch (e) {
+                messageProvider.showMessage("$e", MessageType.error, showForLimitedTime: true);
+              }
+            },
+            backgroundColor: AppColors.secondaryColor,
           ),
         ),
       ],

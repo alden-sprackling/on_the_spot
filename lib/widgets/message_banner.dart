@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '/providers/app_state.dart'; // Import AppState to use MessageType
+import '../providers/message_provider.dart'; // Import AppState to use MessageType
 
 class MessageBanner extends StatefulWidget {
   final String? message;

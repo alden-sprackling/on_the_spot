@@ -7,14 +7,12 @@ class InputField extends StatelessWidget {
   final String hintText;
   final String? labelText;
   final TextInputType keyboardType; // New parameter for keyboard type
-  final bool centerText; // New parameter to center the text
 
   const InputField({
     required this.controller,
     required this.hintText,
     this.labelText,
     this.keyboardType = TextInputType.text, // Default to text keyboard
-    this.centerText = false, // Default to not center the text
     super.key,
   });
 
@@ -31,7 +29,7 @@ class InputField extends StatelessWidget {
       children: [
         if (labelText != null && labelText!.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.only(right: 48, bottom: 24, left: 48),
+            padding: const EdgeInsets.only(bottom: 24),
             child: Text(
               labelText!,
               style: GoogleFonts.grandstander(
@@ -39,6 +37,7 @@ class InputField extends StatelessWidget {
                 fontWeight: FontWeight.w500,
                 color: Colors.black,
               ),
+              textAlign: TextAlign.left,
             ),
           ),
         SizedBox(
@@ -53,12 +52,12 @@ class InputField extends StatelessWidget {
               fontWeight: FontWeight.bold,
               color: Colors.black,
             ),
-            textAlign: centerText ? TextAlign.center : TextAlign.left, // Center text if centerText is true
+            textAlign: TextAlign.left, // Always align text to the left
             decoration: InputDecoration(
               hintText: hintText,
               hintStyle: TextStyle(
                 fontSize: fontSize,
-                color: AppColors.hintTextColor,
+                color: AppColors.lightGrey,
               ),
               filled: true,
               fillColor: Colors.white,
@@ -70,4 +69,3 @@ class InputField extends StatelessWidget {
     );
   }
 }
-

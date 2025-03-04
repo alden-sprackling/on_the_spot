@@ -9,12 +9,12 @@ class AppTheme {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: IconThemeData(
-          color: AppColors.iconColor,
-          size: 42.0, // Set the size of icons in the AppBar
+          color: AppColors.lightGrey,
+          size: 48.0, // Set the size of icons in the AppBar
         ),
       ),
       iconTheme: IconThemeData(
-        size: 50.0, // Set the size of all icons
+        size: 48.0, // Set the size of all icons
       ),
       scaffoldBackgroundColor: Colors.white,
       textTheme: GoogleFonts.grandstanderTextTheme(),
