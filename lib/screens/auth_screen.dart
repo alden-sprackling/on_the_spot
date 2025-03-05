@@ -3,9 +3,7 @@ import 'package:on_the_spot/widgets/back_icon_button.dart';
 import '/widgets/input_field.dart';
 import '/widgets/button.dart';
 import '/theme/app_colors.dart';
-import 'package:provider/provider.dart';
-import '../providers/message_provider.dart';
-import 'template_screen.dart';
+import 'base_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -19,12 +17,9 @@ class AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final messageProvider = Provider.of<MessageProvider>(context);
-
-    return TemplateScreen(
+    return BaseScreen(
       leading: BackIconButton(),
       actions: null,
-      messageBanners: messageProvider.messageBanners,
       columnWidgets: [
         Expanded(
           flex: 1,
@@ -44,11 +39,7 @@ class AuthScreenState extends State<AuthScreen> {
           child: Button(
             text: "CONTINUE >",
             onPressed: () {
-              try {
-                Navigator.pushNamed(context, '/appearance'); // Navigate to the next screen
-              } catch (e) {
-                messageProvider.showMessage("$e", MessageType.error, showForLimitedTime: true);
-              }
+              Navigator.pushNamed(context, '/name'); // Navigate to the next screen
             },
             backgroundColor: AppColors.primaryColor,
           ),

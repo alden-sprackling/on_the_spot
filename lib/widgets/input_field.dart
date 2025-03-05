@@ -1,71 +1,70 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/services.dart';
 import 'package:on_the_spot/theme/app_colors.dart';
+import 'package:on_the_spot/widgets/body_text.dart';
 
 class InputField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
   final String? labelText;
-  final TextInputType keyboardType; // New parameter for keyboard type
+  final TextInputType keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
 
   const InputField({
     required this.controller,
     required this.hintText,
     this.labelText,
-    this.keyboardType = TextInputType.text, // Default to text keyboard
+    this.keyboardType = TextInputType.text,
+    this.inputFormatters,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
-    double inputWidth = screenWidth * 0.8; // 80% of screen width
-    double inputHeight = screenHeight * 0.075; // 7.5% of screen height
-    double fontSize = (inputHeight * 0.5).clamp(14, 32);
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        double inputWidth = constraints.maxWidth;
+        double inputHeight = inputWidth * 0.2;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        if (labelText != null && labelText!.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 24),
-            child: Text(
-              labelText!,
-              style: GoogleFonts.grandstander(
-                fontSize: 24,
-                fontWeight: FontWeight.w500,
-                color: Colors.black,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            if (labelText != null && labelText!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 24),
+                child: BodyText(
+                  text: labelText!,
+                ),
               ),
-              textAlign: TextAlign.left,
-            ),
-          ),
-        SizedBox(
-          width: inputWidth,
-          height: inputHeight,
-          child: TextField(
-            controller: controller,
-            keyboardType: keyboardType, // Sets the keyboard type
-            autofocus: true, // Auto-focus enabled
-            style: TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-            textAlign: TextAlign.left, // Always align text to the left
-            decoration: InputDecoration(
-              hintText: hintText,
-              hintStyle: TextStyle(
-                fontSize: fontSize,
-                color: AppColors.lightGrey,
+            SizedBox(
+              width: inputWidth,
+              height: inputHeight,
+              child: TextField(
+                controller: controller,
+                keyboardType: keyboardType,
+                inputFormatters: inputFormatters,
+                autofocus: true,
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+                textAlign: TextAlign.left,
+                decoration: InputDecoration(
+                  hintText: hintText,
+                  hintStyle: TextStyle(
+                    fontSize: 32,
+                    color: AppColors.lightGrey,
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: InputBorder.none,
+                ),
               ),
-              filled: true,
-              fillColor: Colors.white,
-              border: InputBorder.none,
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 }

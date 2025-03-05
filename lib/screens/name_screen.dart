@@ -4,26 +4,28 @@ import '/widgets/button.dart';
 import '/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 import '../providers/message_provider.dart';
-import 'template_screen.dart';
+import '../providers/player_provider.dart'; // Import PlayerProvider
+import 'base_screen.dart';
+import '../utils/username_formatter.dart'; // Import the formatter
 
-class AppearanceScreen extends StatefulWidget {
-  const AppearanceScreen({super.key});
+class NameScreen extends StatefulWidget {
+  const NameScreen({super.key});
 
   @override
-  AppearanceScreenState createState() => AppearanceScreenState();
+  NameScreenState createState() => NameScreenState();
 }
 
-class AppearanceScreenState extends State<AppearanceScreen> {
+class NameScreenState extends State<NameScreen> {
   final TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     final messageProvider = Provider.of<MessageProvider>(context);
+    final playerProvider = Provider.of<PlayerProvider>(context);
 
-    return TemplateScreen(
-      leading: null,
+    return BaseScreen(
+      leading: BackButton(),
       actions: null,
-      messageBanners: messageProvider.messageBanners,
       columnWidgets: [
         Expanded(
           flex: 1,
@@ -36,6 +38,7 @@ class AppearanceScreenState extends State<AppearanceScreen> {
             labelText: "How do you want to be seen by other players?",
             hintText: "Enter nickname",
             keyboardType: TextInputType.text,
+            inputFormatters: [UsernameFormatter()], // Apply the formatter
           ),
         ),
         Expanded(
@@ -43,10 +46,14 @@ class AppearanceScreenState extends State<AppearanceScreen> {
           child: Button(
             text: "CONTINUE >",
             onPressed: () {
+              final username = _controller.text;
+
               try {
+                playerProvider.setPlayerName(username);
+                FocusScope.of(context).requestFocus(FocusNode()); // Forces keyboard to close
                 Navigator.pushNamed(context, '/home'); // Navigate to the next screen
               } catch (e) {
-                messageProvider.showMessage("$e", MessageType.error, showForLimitedTime: true);
+                messageProvider.showMessage(e.toString(), MessageType.error, showForLimitedTime: true);
               }
             },
             backgroundColor: AppColors.primaryColor,

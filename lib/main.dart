@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'providers/player_provider.dart';
 import 'screens/welcome_screen.dart';
-import 'screens/appearance_screen.dart';
+import 'screens/name_screen.dart';
 import 'screens/auth_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/join_screen.dart';
@@ -41,7 +41,7 @@ class OnTheSpotApp extends StatelessWidget {
       routes: {
         '/': (context) => WelcomeScreen(),
         '/auth': (context) => AuthScreen(),
-        '/appearance': (context) => AppearanceScreen(),
+        '/name': (context) => NameScreen(),
         '/home': (context) => HomeScreen(),
         '/join': (context) => JoinScreen(),
         '/host_lobby': (context) => HostLobbyScreen(),

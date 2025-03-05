@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:on_the_spot/widgets/header.dart';
+import 'package:on_the_spot/utils/phone_number_formatter.dart';
+import 'package:on_the_spot/widgets/header_text.dart';
 import 'package:on_the_spot/widgets/info_icon_button.dart';
 import '/widgets/input_field.dart';
 import '/widgets/button.dart';
 import '/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 import '../providers/message_provider.dart';
-import 'template_screen.dart';
+import '../providers/player_provider.dart';
+import 'base_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -21,17 +23,17 @@ class WelcomeScreenState extends State<WelcomeScreen> {
   @override
   Widget build(BuildContext context) {
     final messageProvider = Provider.of<MessageProvider>(context);
+    final playerProvider = Provider.of<PlayerProvider>(context);
 
-    return TemplateScreen(
+    return BaseScreen(
       leading: null,
       actions: [
         InfoIconButton(),
       ],
-      messageBanners: messageProvider.messageBanners,
       columnWidgets: [
         Expanded(
           flex: 1,
-          child: Header(text: "Welcome!"),
+          child: HeaderText(text: "Welcome!"),
         ),
         Expanded(
           flex: 2,
@@ -40,6 +42,7 @@ class WelcomeScreenState extends State<WelcomeScreen> {
             hintText: "Enter phone #",
             labelText: "Enter your phone number to get started:",
             keyboardType: TextInputType.phone,
+            inputFormatters: [PhoneNumberFormatter()],
           ),
         ),
         Expanded(
@@ -48,6 +51,7 @@ class WelcomeScreenState extends State<WelcomeScreen> {
             text: "CONTINUE >",
             onPressed: () {
               try {
+                playerProvider.setPhoneNumber(_controller.text);
                 Navigator.pushNamed(context, '/auth'); // Navigate to the next screen
               } catch (e) {
                 messageProvider.showMessage("$e", MessageType.error, showForLimitedTime: true);
