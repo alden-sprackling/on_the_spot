@@ -1,0 +1,50 @@
+import 'package:flutter/material.dart';
+import 'package:on_the_spot/widgets/back_icon_button.dart';
+import '/widgets/input_field.dart';
+import '/widgets/button.dart';
+import '/theme/app_colors.dart';
+import 'base_screen.dart';
+
+class OTPVerificationScreen extends StatefulWidget {
+  const OTPVerificationScreen({super.key});
+
+  @override
+  OTPVerificationScreenState createState() => OTPVerificationScreenState();
+}
+
+class OTPVerificationScreenState extends State<OTPVerificationScreen> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return BaseScreen(
+      leading: BackIconButton(),
+      actions: null,
+      columnWidgets: [
+        Expanded(
+          flex: 1,
+          child: SizedBox(),
+        ),
+        Expanded(
+          flex: 3,
+          child: InputField(
+            controller: _controller,
+            hintText: "Enter code",
+            labelText: "Enter the code that was sent through text:",
+            keyboardType: TextInputType.number,
+          ),
+        ),
+        Expanded(
+          flex: 0,
+          child: Button(
+            text: "CONTINUE >",
+            onPressed: () {
+              Navigator.pushNamed(context, '/name'); // Navigate to the next screen
+            },
+            backgroundColor: AppColors.primaryColor,
+          ),
+        ),
+      ],
+    );
+  }
+}

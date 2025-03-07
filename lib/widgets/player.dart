@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/player_provider.dart';
 import '../theme/app_colors.dart';
 
 class Player extends StatelessWidget {
-  const Player({super.key});
+  final String playerName;
+  final String profilePicture;
+  final Color? backgroundColor;
+
+  const Player({
+    super.key,
+    required this.playerName,
+    required this.profilePicture,
+    this.backgroundColor,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final playerProvider = Provider.of<PlayerProvider>(context);
-
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final containerWidth = constraints.maxWidth;
         final avatarWidth = containerWidth * 0.75;
-        final fontSize = containerWidth * 0.1;
+        final fontSize = containerWidth * 0.10;
 
         return ClipRRect(
           borderRadius: BorderRadius.circular(20),
@@ -22,7 +27,7 @@ class Player extends StatelessWidget {
             width: containerWidth,
             height: containerWidth,
             child: Container(
-              color: Colors.transparent, // Square background color
+              color: backgroundColor ?? Colors.transparent, // Square background color
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -32,14 +37,14 @@ class Player extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       image: DecorationImage(
-                        image: AssetImage('assets/profile_pictures/${playerProvider.profilePicture}.png'),
+                        image: AssetImage('assets/profile_pictures/$profilePicture.png'),
                         fit: BoxFit.cover,
                       ),
                     ),
                   ),
                   SizedBox(height: 8),
                   Text(
-                    playerProvider.playerName,
+                    playerName,
                     style: TextStyle(
                       fontSize: fontSize,
                       fontWeight: FontWeight.bold,

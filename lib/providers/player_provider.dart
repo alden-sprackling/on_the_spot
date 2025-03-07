@@ -3,7 +3,7 @@ import 'exceptions.dart';
 
 class PlayerProvider extends ChangeNotifier {
   String _playerName = "DEFAULT";
-  String _profilePicture = "default"; // Default profile picture
+  String _profilePicture = "default";
   String _phoneNumber = "";
 
   String get playerName => _playerName;

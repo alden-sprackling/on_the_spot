@@ -10,14 +10,14 @@ import '../providers/message_provider.dart';
 import '../providers/player_provider.dart';
 import 'base_screen.dart';
 
-class WelcomeScreen extends StatefulWidget {
-  const WelcomeScreen({super.key});
+class PhoneNumberScreen extends StatefulWidget {
+  const PhoneNumberScreen({super.key});
 
   @override
-  WelcomeScreenState createState() => WelcomeScreenState();
+  PhoneNumberScreenState createState() => PhoneNumberScreenState();
 }
 
-class WelcomeScreenState extends State<WelcomeScreen> {
+class PhoneNumberScreenState extends State<PhoneNumberScreen> {
   final TextEditingController _controller = TextEditingController();
 
   @override
@@ -52,7 +52,7 @@ class WelcomeScreenState extends State<WelcomeScreen> {
             onPressed: () {
               try {
                 playerProvider.setPhoneNumber(_controller.text);
-                Navigator.pushNamed(context, '/auth'); // Navigate to the next screen
+                Navigator.pushNamed(context, '/otp_verification'); // Navigate to the next screen
               } catch (e) {
                 messageProvider.showMessage("$e", MessageType.error, showForLimitedTime: true);
               }

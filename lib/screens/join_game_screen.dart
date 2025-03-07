@@ -1,25 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:on_the_spot/widgets/back_icon_button.dart';
-import '/widgets/input_field.dart';
-import '/widgets/button.dart';
-import '/theme/app_colors.dart';
+import '../widgets/back_icon_button.dart';
+import '../widgets/input_field.dart';
+import '../widgets/button.dart';
+import '../theme/app_colors.dart';
 import 'base_screen.dart';
 
-class AuthScreen extends StatefulWidget {
-  const AuthScreen({super.key});
-
-  @override
-  AuthScreenState createState() => AuthScreenState();
-}
-
-class AuthScreenState extends State<AuthScreen> {
+class JoinGameScreen extends StatelessWidget {
+  JoinGameScreen({super.key});
   final TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return BaseScreen(
       leading: BackIconButton(),
-      actions: null,
       columnWidgets: [
         Expanded(
           flex: 1,
@@ -29,8 +22,7 @@ class AuthScreenState extends State<AuthScreen> {
           flex: 3,
           child: InputField(
             controller: _controller,
-            hintText: "Enter code",
-            labelText: "Enter the code that was sent through text:",
+            hintText: "Enter game code",
             keyboardType: TextInputType.number,
           ),
         ),
@@ -39,7 +31,7 @@ class AuthScreenState extends State<AuthScreen> {
           child: Button(
             text: "CONTINUE >",
             onPressed: () {
-              Navigator.pushNamed(context, '/name'); // Navigate to the next screen
+              // Navigator.pushNamed(context, '/create_game'); // Navigate to the next screen
             },
             backgroundColor: AppColors.primaryColor,
           ),

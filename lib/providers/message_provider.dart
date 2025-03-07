@@ -1,28 +1,47 @@
 import 'package:flutter/material.dart';
-import '/widgets/message_banner.dart';
 
 enum MessageType { error, warning, confirmation }
 
-class MessageProvider extends ChangeNotifier {
-  final List<MessageBanner> _messageBanners = [];
+class Message {
+  final String message;
+  final MessageType type;
 
-  List<MessageBanner> get messageBanners => _messageBanners;
+  Message({required this.message, required this.type});
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Message &&
+          runtimeType == other.runtimeType &&
+          message == other.message &&
+          type == other.type;
+
+  @override
+  int get hashCode => message.hashCode ^ type.hashCode;
+}
+
+class MessageProvider extends ChangeNotifier {
+  final List<Message> _messages = [];
+
+  List<Message> get messages => _messages;
 
   void showMessage(String message, MessageType type, {bool showForLimitedTime = false}) {
-    final newMessageBanner = MessageBanner(message: message, type: type);
-    _messageBanners.add(newMessageBanner);
-    notifyListeners();
+    final newMessage = Message(message: message, type: type);
+    if (!_messages.contains(newMessage)) {
+      _messages.add(newMessage);
+      notifyListeners();
 
-    if (showForLimitedTime) {
-      Future.delayed(Duration(seconds: 4), () {
-        _messageBanners.remove(newMessageBanner);
-        notifyListeners();
-      });
+      if (showForLimitedTime) {
+        Future.delayed(Duration(seconds: 4), () {
+          _messages.remove(newMessage);
+          notifyListeners();
+        });
+      }
     }
   }
 
   void clearMessages() {
-    _messageBanners.clear();
+    _messages.clear();
     notifyListeners();
   }
 }

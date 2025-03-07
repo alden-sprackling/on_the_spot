@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/message_provider.dart';
+import '../widgets/message_banner.dart';
 
 class BaseScreen extends StatefulWidget {
   final Widget? leading;
@@ -67,7 +68,9 @@ class BaseScreenState extends State<BaseScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: messageProvider.messageBanners,
+              children: messageProvider.messages.map((message) {
+                return MessageBanner(message: message.message, type: message.type);
+              }).toList(),
             ),
           ),
         ],
