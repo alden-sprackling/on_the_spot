@@ -25,7 +25,7 @@ class MessageProvider extends ChangeNotifier {
 
   List<Message> get messages => _messages;
 
-  void showMessage(String message, MessageType type, {bool showForLimitedTime = false}) {
+  void showMessage(String message, MessageType type, {bool showForLimitedTime = true}) {
     final newMessage = Message(message: message, type: type);
     if (!_messages.contains(newMessage)) {
       _messages.add(newMessage);

@@ -7,7 +7,7 @@ class InfoIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: Icon(Icons.info_outline_rounded),
+      icon: Icon(Icons.info_outline),
       onPressed: () {},
     );
   }

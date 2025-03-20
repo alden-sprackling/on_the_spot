@@ -25,7 +25,7 @@ class HomeScreenState extends State<HomeScreen> {
     
     return BaseScreen(
       resizeToAvoidBottomInset: false, // Prevents screen from resizing when keyboard appears
-      leading: BackButton(),
+      leading: null,
       actions: [
         InfoIconButton(),
         SettingsIconButton(),

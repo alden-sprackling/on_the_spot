@@ -17,7 +17,7 @@ class HeaderText extends StatelessWidget {
       text,
       style: GoogleFonts.grandstander(
         fontSize: 64, // Fixed at 64px
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.w600,
         color: color,
       ),
       textAlign: TextAlign.center,

@@ -25,22 +25,24 @@ class BaseScreen extends StatefulWidget {
 
 class BaseScreenState extends State<BaseScreen> {
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<MessageProvider>(context, listen: false).clearMessages();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     final messageProvider = Provider.of<MessageProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false, // Disable the back button
-        leading: widget.leading,
-        actions: widget.actions,
+        leading: widget.leading != null
+            ? Padding(
+                padding: const EdgeInsets.only(left: 16.0), // Add padding to the left of the leading widget
+                child: widget.leading,
+              )
+            : null,
+        actions: widget.actions?.map((action) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 16.0), // Add padding to the right of each action
+                  child: action,
+                );
+              }).toList(),
       ),
       resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
       body: Stack(

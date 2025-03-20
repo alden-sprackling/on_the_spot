@@ -24,7 +24,7 @@ class NameScreenState extends State<NameScreen> {
     final playerProvider = Provider.of<PlayerProvider>(context);
 
     return BaseScreen(
-      leading: BackButton(),
+      leading: null,
       actions: null,
       columnWidgets: [
         Expanded(
