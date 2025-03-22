@@ -1,6 +1,8 @@
 // screens/splash_screen.dart
 import 'package:flutter/material.dart';
 import 'package:on_the_spot/services/auth_service.dart';
+import 'package:provider/provider.dart';
+import '../providers/player_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -18,44 +20,44 @@ class SplashScreenState extends State<SplashScreen> {
     _checkAuthentication();
   }
 
-  /// Checks for an access token, and if not found, attempts to refresh tokens.
+  /// Checks for an access token; if missing, attempts to refresh tokens.
+  /// Then, loads the player data (username, profile picture, IQ points) and navigates accordingly.
   Future<void> _checkAuthentication() async {
-    // Try to get the stored access token.
     final accessToken = await _authService.getToken();
     if (accessToken != null) {
-      // Access token exists; assume user is authenticated.
+      if (mounted) {
+        await Provider.of<PlayerProvider>(context, listen: false).loadPlayerData();
+      }
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/home');
       }
-    } else {
-      // No access token; try to use the refresh token.
-      final refreshToken = await _authService.getRefreshToken();
-      if (refreshToken != null) {
-        try {
-          // Attempt to refresh tokens.
-          await _authService.refreshToken(refreshToken);
-          // If refresh is successful, navigate to Home.
-          if (mounted) {
-            Navigator.pushReplacementNamed(context, '/home');
-          }
-        } catch (e) {
-          // Refresh failed; navigate to sign-in flow.
-          if (mounted) {
-            Navigator.pushReplacementNamed(context, '/');
-          }
+      return;
+    }
+
+    final refreshToken = await _authService.getRefreshToken();
+    if (refreshToken != null) {
+      try {
+        await _authService.refreshToken(refreshToken);
+        if (mounted) {
+          await Provider.of<PlayerProvider>(context, listen: false).loadPlayerData();
         }
-      } else {
-        // No refresh token; navigate to sign-in flow.
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      } catch (e) {
         if (mounted) {
           Navigator.pushReplacementNamed(context, '/');
         }
+      }
+    } else {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/');
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Show a loading indicator while checking authentication.
     return Scaffold(
       body: Center(child: CircularProgressIndicator()),
     );

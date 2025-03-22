@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:on_the_spot/widgets/info_icon_button.dart';
 import 'package:on_the_spot/widgets/settings_icon_button.dart';
 import 'package:provider/provider.dart';
 import '../providers/message_provider.dart';
@@ -27,7 +26,6 @@ class HomeScreenState extends State<HomeScreen> {
       resizeToAvoidBottomInset: false, // Prevents screen from resizing when keyboard appears
       leading: null,
       actions: [
-        InfoIconButton(),
         SettingsIconButton(),
       ],
       mainAxisAlignment: MainAxisAlignment.spaceAround,

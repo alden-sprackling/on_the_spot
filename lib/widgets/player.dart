@@ -17,9 +17,9 @@ class Player extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        final containerWidth = constraints.maxWidth;
-        final avatarWidth = containerWidth * 0.75;
-        final fontSize = containerWidth * 0.10;
+        final containerWidth = constraints.maxWidth; 
+        final avatarWidth = containerWidth * 0.70; 
+        final fontSize = containerWidth * 0.15;
 
         return ClipRRect(
           borderRadius: BorderRadius.circular(20),
