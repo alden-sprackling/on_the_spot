@@ -1,132 +1,100 @@
-// services/auth_service.dart
+// lib/services/auth_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../providers/exceptions.dart';
+import '../constants/constants.dart';
+import '../exceptions/exceptions.dart';
+import 'auth_storage_service.dart';
 
 class AuthService {
-  final String baseUrl;
-  final FlutterSecureStorage secureStorage;
+  final String _baseUrl = baseURL;
+  final AuthStorageService _authStorageService = AuthStorageService();
 
-  AuthService({
-    required this.baseUrl,
-    FlutterSecureStorage? secureStorage,
-  }) : secureStorage = secureStorage ?? const FlutterSecureStorage();
-
-  /// Sends the verification code to the given phone number.
-  /// Returns the confirmation message from the server.
-  Future<String> sendVerificationCode(String phoneNumber) async {
-    _validatePhoneNumber(phoneNumber); // Validate phone number format (10 digits)
-    final url = Uri.parse('$baseUrl/auth/phone/send');
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'phoneNumber': phoneNumber}),
-      );
-
-      final data = jsonDecode(response.body);
-      if (response.statusCode != 200) {
-        final errorMessage = data['error'] ?? 'An unknown error occurred';
-        throw AuthenticationException(AuthenticationErrorType.sendFailed, errorMessage);
-      } else {
-        final confirmationMessage = data['confirmation'] ?? 'Verification code sent successfully';
-        return confirmationMessage;
-      }
-    } catch (e) {
-      if (e is AuthenticationException) rethrow;
-      throw AuthenticationException(AuthenticationErrorType.unknown, e.toString());
+  /// Sends an SMS code to the provided [phoneNumber] for authentication.
+  /// Returns true if the SMS code is sent successfully.
+  /// Throws an [AuthenticationException] if the request fails.
+  Future<bool> sendSMSCode(String phoneNumber) async {
+    final url = Uri.parse('$_baseUrl/auth/sendSMSCode');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'phone_number': phoneNumber}),
+    );
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw AuthenticationException(AuthenticationErrorType.failedToSend);
     }
   }
 
-  /// Verifies the provided code and, if successful, stores both the access and refresh tokens.
-  /// Returns the access token.
-  Future<String> verifyCode(String phoneNumber, String code) async {
-    final url = Uri.parse('$baseUrl/auth/phone/verify');
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'phoneNumber': phoneNumber, 'code': code}),
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final accessToken = data['accessToken'];
-        final refreshToken = data['refreshToken'];
-        if (accessToken == null || refreshToken == null) {
-          throw AuthenticationException(
-              AuthenticationErrorType.verifyFailed, 'Token not found in response');
-        }
-        // Securely store both tokens for future use.
-        await secureStorage.write(key: 'auth_token', value: accessToken);
-        await secureStorage.write(key: 'refresh_token', value: refreshToken);
-        return accessToken;
-      } else {
-        final errorMessage = jsonDecode(response.body)['error'] ?? 'Verification failed';
-        throw AuthenticationException(AuthenticationErrorType.verifyFailed, errorMessage);
-      }
-    } catch (e) {
-      if (e is AuthenticationException) rethrow;
-      throw AuthenticationException(AuthenticationErrorType.unknown, e.toString());
+  /// Verifies the SMS authentication code for the given [phoneNumber] and [code].
+  /// On success, this method saves the session and refresh tokens in secure storage
+  /// and returns true.
+  /// Throws an [AuthenticationException] if the verification fails.
+  Future<bool> verifySMSCode(String phoneNumber, String code) async {
+    final url = Uri.parse('$_baseUrl/auth/verifySMSCode');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'phone_number': phoneNumber,
+        'code': code,
+      }),
+    );
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final sessionToken = data['access_token'];
+      final refreshToken = data['refresh_token'];
+
+      // Save tokens securely.
+      return await _authStorageService.saveTokens(sessionToken, refreshToken);
+    } else {
+      throw AuthenticationException(AuthenticationErrorType.failedToVerify);
     }
   }
 
-  /// Retrieves the stored access token.
-  Future<String?> getToken() async {
-    return await secureStorage.read(key: 'auth_token');
-  }
-
-  /// Retrieves the stored refresh token.
-  Future<String?> getRefreshToken() async {
-    return await secureStorage.read(key: 'refresh_token');
-  }
-
-  /// Clears the stored tokens (e.g., on logout).
-  Future<void> clearTokens() async {
-    await secureStorage.delete(key: 'auth_token');
-    await secureStorage.delete(key: 'refresh_token');
-  }
-
-  /// Uses the provided refresh token to obtain new tokens.
-  /// Returns a map containing the new 'accessToken' and 'refreshToken'.
-  Future<Map<String, String>> refreshToken(String refreshToken) async {
-    final url = Uri.parse('$baseUrl/auth/refresh');
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'refreshToken': refreshToken}),
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final newAccessToken = data['accessToken'];
-        final newRefreshToken = data['refreshToken'];
-        if (newAccessToken == null || newRefreshToken == null) {
-          throw AuthenticationException(
-              AuthenticationErrorType.unknown, 'Failed to refresh token');
-        }
-        // Update stored tokens.
-        await secureStorage.write(key: 'auth_token', value: newAccessToken);
-        await secureStorage.write(key: 'refresh_token', value: newRefreshToken);
-        return {
-          'accessToken': newAccessToken,
-          'refreshToken': newRefreshToken,
-        };
-      } else {
-        final errorMessage = jsonDecode(response.body)['error'] ?? 'Failed to refresh token';
-        throw AuthenticationException(AuthenticationErrorType.unknown, errorMessage);
-      }
-    } catch (e) {
-      if (e is AuthenticationException) rethrow;
-      throw AuthenticationException(AuthenticationErrorType.unknown, e.toString());
+  /// Refreshes the session token using the provided [savedRefreshToken].
+  /// On success, saves the new session and refresh tokens in secure storage
+  /// and returns the new session token.
+  /// Throws an [AuthServiceException] if the refresh operation fails.
+  Future<String> refreshSessionToken(String savedRefreshToken) async {
+    final url = Uri.parse('$_baseUrl/auth/refreshSessionToken');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'refresh_token': savedRefreshToken}),
+    );
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final newSessionToken = data['access_token'];
+      final newRefreshToken = data['refresh_token'];
+      await _authStorageService.saveTokens(newSessionToken, newRefreshToken);
+      return newSessionToken;
+    } else {
+      throw AuthServiceException(AuthServiceErrorType.refreshFailed);
     }
   }
 
-  /// Validates the phone number format.
-  /// Throws an [InvalidPhoneNumberException] if the format is invalid.
-  void _validatePhoneNumber(String phone) {
-    if (phone.length != 10 || !RegExp(r'^\d{10}$').hasMatch(phone)) {
-      throw InvalidPhoneNumberException();
+  /// Validates the stored session token.
+  /// If the current session token is expired (HTTP 401), attempts to refresh it
+  /// using the stored refresh token.
+  /// Returns true if the token is valid or successfully refreshed.
+  /// Throws an [AuthServiceException] if the refresh fails.
+  Future<bool> validateSessionToken() async {
+    final savedSessionToken = await _authStorageService.getSessionToken();
+    final savedRefreshToken = await _authStorageService.getRefreshToken();
+    final url = Uri.parse('$_baseUrl/auth/validateSessionToken');
+    final response = await http.get(url, headers: {'Authorization': 'Bearer $savedSessionToken'}); 
+    if (response.statusCode == 200) {
+      return true;
+    } else if (response.statusCode == 401) {
+      try {
+        await refreshSessionToken(savedRefreshToken);
+        return true;
+      } catch (e) {
+        throw AuthServiceException(AuthServiceErrorType.refreshFailed);
+      }
+    } else {
+      throw AuthServiceException(AuthServiceErrorType.signInFailed);
     }
   }
 }

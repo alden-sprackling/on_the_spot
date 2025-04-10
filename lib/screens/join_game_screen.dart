@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../widgets/back_icon_button.dart';
-import '../widgets/input_field.dart';
-import '../widgets/button.dart';
+import '../widgets/icons/back_icon_button.dart';
+import '../widgets/input_fields/input_field.dart';
+import '../widgets/buttons/button.dart';
 import '../theme/app_colors.dart';
 import 'base_screen.dart';
 

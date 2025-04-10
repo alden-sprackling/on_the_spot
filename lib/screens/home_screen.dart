@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:on_the_spot/widgets/settings_icon_button.dart';
-import 'package:provider/provider.dart';
-import '../providers/message_provider.dart';
-import '../providers/player_provider.dart';
-import '../widgets/player.dart';
-import '/widgets/button.dart';
+import 'package:on_the_spot/widgets/icons/settings_icon_button.dart';
+import '../widgets/user_widget.dart';
+import '../widgets/buttons/button.dart';
 import '/theme/app_colors.dart';
 import 'base_screen.dart';
 
@@ -16,12 +13,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen> {
-
   @override
   Widget build(BuildContext context) {
-    final messageProvider = Provider.of<MessageProvider>(context);
-    final playerProvider = Provider.of<PlayerProvider>(context);
-    
     return BaseScreen(
       resizeToAvoidBottomInset: false, // Prevents screen from resizing when keyboard appears
       leading: null,
@@ -30,19 +23,17 @@ class HomeScreenState extends State<HomeScreen> {
       ],
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       columnWidgets: [
-        Player(
-          playerName: playerProvider.playerName,
-          profilePicture: playerProvider.profilePicture,
+        UserWidget(
+          containerWidthPercent: .75, // Adjust width to 75% of the screen
         ),
         Column(
           children: [
             Button(
-              text: "JOIN",
+              text: "JOIN GAME",
               onPressed: () {
                 try {
                   Navigator.pushNamed(context, '/join_game'); // Navigate to the next screen
                 } catch (e) {
-                  messageProvider.showMessage(e.toString(), MessageType.error, showForLimitedTime: true);
                 }
               },
               backgroundColor: AppColors.primaryColor,
@@ -54,7 +45,6 @@ class HomeScreenState extends State<HomeScreen> {
                 try {
                   Navigator.pushNamed(context, '/create_game'); // Navigate to the next screen
                 } catch (e) {
-                  messageProvider.showMessage(e.toString(), MessageType.error, showForLimitedTime: true);
                 }
               },
               backgroundColor: AppColors.secondaryColor,

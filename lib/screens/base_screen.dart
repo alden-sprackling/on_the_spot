@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/message_provider.dart';
-import '../widgets/message_banner.dart';
+import '../widgets/system_message_banner.dart';
 
 class BaseScreen extends StatefulWidget {
   final Widget? leading;
@@ -26,8 +24,6 @@ class BaseScreen extends StatefulWidget {
 class BaseScreenState extends State<BaseScreen> {
   @override
   Widget build(BuildContext context) {
-    final messageProvider = Provider.of<MessageProvider>(context);
-
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false, // Disable the back button
@@ -37,16 +33,27 @@ class BaseScreenState extends State<BaseScreen> {
                 child: widget.leading,
               )
             : null,
-        actions: widget.actions?.map((action) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 16.0), // Add padding to the right of each action
-                  child: action,
-                );
-              }).toList(),
+        actions: widget.actions != null
+            ? [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16.0), // Add padding to the right of the entire actions array
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: widget.actions!,
+                  ),
+                ),
+              ]
+            : null,
       ),
       resizeToAvoidBottomInset: widget.resizeToAvoidBottomInset,
       body: Stack(
         children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: MessageBanner(),
+          ),
           Padding(
             padding: const EdgeInsets.all(32.0), // Add padding around the whole screen
             child: Center(
@@ -61,18 +68,6 @@ class BaseScreenState extends State<BaseScreen> {
                   children: widget.columnWidgets,
                 ),
               ),
-            ),
-          ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: messageProvider.messages.map((message) {
-                return MessageBanner(message: message.message, type: message.type);
-              }).toList(),
             ),
           ),
         ],

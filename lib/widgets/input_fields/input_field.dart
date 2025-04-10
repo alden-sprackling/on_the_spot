@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:on_the_spot/theme/app_colors.dart';
-import 'package:on_the_spot/widgets/body_text.dart';
+import 'package:on_the_spot/widgets/text/body_text.dart';
 
 class InputField extends StatelessWidget {
   final TextEditingController controller;
@@ -9,6 +9,7 @@ class InputField extends StatelessWidget {
   final String? labelText;
   final TextInputType keyboardType;
   final List<TextInputFormatter>? inputFormatters;
+  final int? maxLength; 
 
   const InputField({
     required this.controller,
@@ -16,6 +17,7 @@ class InputField extends StatelessWidget {
     this.labelText,
     this.keyboardType = TextInputType.text,
     this.inputFormatters,
+    this.maxLength, 
     super.key,
   });
 
@@ -43,6 +45,7 @@ class InputField extends StatelessWidget {
                 controller: controller,
                 keyboardType: keyboardType,
                 inputFormatters: inputFormatters,
+                maxLength: maxLength, 
                 autofocus: true,
                 style: TextStyle(
                   fontSize: 32,
@@ -59,6 +62,7 @@ class InputField extends StatelessWidget {
                   filled: true,
                   fillColor: Colors.white,
                   border: InputBorder.none,
+                  counterText: '', // Hide the default counter text
                 ),
               ),
             ),
