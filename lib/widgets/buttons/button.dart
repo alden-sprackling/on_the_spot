@@ -4,12 +4,14 @@ class Button extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
   final Color backgroundColor;
+  final Color? textColor; // Optional text color
 
   const Button({
+    super.key,
     required this.text,
     required this.onPressed,
     required this.backgroundColor,
-    super.key,
+    this.textColor,
   });
 
   @override
@@ -36,7 +38,7 @@ class Button extends StatelessWidget {
               style: TextStyle(
                 fontSize: fontSize,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: textColor ?? Colors.white,
               ),
             ),
           ),

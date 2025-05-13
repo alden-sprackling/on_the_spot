@@ -1,60 +1,41 @@
-/// Represents a user's profile.
+// lib/src/models/user.dart
+
 class User {
-  final int id; // ID of the user
-  String username; 
-  ProfilePicture profilePicture;
-  int iqPoints; // Ranking points
+  final String id;
+  final String phone;
+  final String? name;
+  final String? profilePic;
+  final int iq;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   User({
     required this.id,
-    required this.username,
-    required this.profilePicture,
-    required this.iqPoints,
+    required this.phone,
+    this.name,
+    this.profilePic,
+    required this.iq,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
-  /// Creates a [User] from JSON.
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'],
-      username: json['username'],
-      profilePicture: ProfilePicture.fromJson(json['profile_picture']),
-      iqPoints: json['iq_points'],
-    );
-  }
+  factory User.fromJson(Map<String, dynamic> json) => User(
+        id: json['id'] as String,
+        phone: json['phone'] as String,
+        name: json['name'] as String?,
+        profilePic: json['profilepic'] as String?,      // match lowercase
+        iq: json['iq'] as int,
+        createdAt: DateTime.parse(json['createdat'] as String),  // lowercase
+        updatedAt: DateTime.parse(json['updatedat'] as String),
+      );
 
-  /// Converts a [User] to JSON.
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'username': username,
-      'profile_picture': profilePicture.toJson(),
-      'iq_points': iqPoints,
-    };
-  }
-}
-
-class ProfilePicture {
-  final String image;
-  final int minIqPoints;
-
-  const ProfilePicture({
-    required this.image,
-    required this.minIqPoints,
-  });
-
-  // Create a ProfilePicture from a JSON map
-  factory ProfilePicture.fromJson(Map<String, dynamic> json) {
-    return ProfilePicture(
-      image: json['image'] as String,
-      minIqPoints: json['minIqPoints'] as int,
-    );
-  }
-
-  // Convert a ProfilePicture to a JSON map
-  Map<String, dynamic> toJson() {
-    return {
-      'image': image,
-      'minIqPoints': minIqPoints,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'phone': phone,
+        'name': name,
+        'profilepic': profilePic,
+        'iq': iq,
+        'createdat': createdAt.toIso8601String(),
+        'updatedat': updatedAt.toIso8601String(),
+      };
 }

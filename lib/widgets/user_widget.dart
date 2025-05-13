@@ -16,13 +16,13 @@ class UserWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<UserProvider>(
-      builder: (context, playerProvider, child) {
-        final player = playerProvider.user;
+      builder: (context, userProvider, child) {
+        final user = userProvider.user;
 
-        if (player == null) {
+        if (user == null) {
           return const Center(
             child: Text(
-              'No player data available',
+              'Profile not found',
               style: TextStyle(color: Colors.grey),
             ),
           );
@@ -50,14 +50,14 @@ class UserWidget extends StatelessWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           image: DecorationImage(
-                            image: AssetImage('assets/profile_pictures/${player.profilePicture}.png'),
+                            image: NetworkImage('${user.profilePic}'), // Default avatar
                             fit: BoxFit.cover,
                           ),
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        player.username,
+                        user.name!,
                         style: TextStyle(
                           fontSize: fontSize,
                           fontWeight: FontWeight.bold,

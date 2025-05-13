@@ -1,99 +1,99 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import '../constants/constants.dart';
-import '../exceptions/exceptions.dart';
-import '../models/game.dart';
-import 'auth_storage_service.dart';
-import 'game_storage_service.dart';
+// lib/src/services/game_service.dart
 
+import 'package:dio/dio.dart';
+import '../api/api_client.dart';
+import '../api/endpoints.dart';
+import '../models/game_player.dart';
+
+/// Vote tally for a category in a round
+class VoteCount {
+  final String categoryId;
+  final int count;
+
+  VoteCount({required this.categoryId, required this.count});
+
+  factory VoteCount.fromJson(Map<String, dynamic> json) => VoteCount(
+        categoryId: json['categoryId'] as String,
+        count: json['count'] as int,
+      );
+}
+
+/// Result of submitting an answer: correctness and points awarded
+class AnswerResult {
+  final bool correct;
+  final int pointsAwarded;
+
+  AnswerResult({required this.correct, required this.pointsAwarded});
+
+  factory AnswerResult.fromJson(Map<String, dynamic> json) => AnswerResult(
+        correct: json['correct'] as bool,
+        pointsAwarded: json['pointsAwarded'] as int,
+      );
+}
+
+/// Service for game-related actions (vote, answer, leaderboard)
 class GameService {
-  final String _baseUrl = baseURL;
-  final AuthStorageService _authStorageService = AuthStorageService();
-  final GameStorageService _gameStorageService = GameStorageService();
+  final ApiClient _client = ApiClient();
 
-  /// Creates a new game session on the backend.
-  /// Returns the created [Game] object if the game is successfully created.
-  /// Throws a [GameServiceException] if the game creation fails.
-  Future<Game> createGame() async {
-    final token = await _authStorageService.getSessionToken();
-    final url = Uri.parse('$_baseUrl/game');
-    final response = await http.post(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
-    if (response.statusCode == 201) {
-      final data = json.decode(response.body);
-      final game = Game.fromJson(data);
-      await _gameStorageService.saveGameId(game.id);
-      return game;
-    } else {
-      throw GameServiceException(GameServiceErrorType.creationFailed);
-    }
-  }
-
-  /// Retrieves game session details from the backend for the provided [gameId].
-  /// Returns the [Game] object if the fetch is successful.
-  /// Throws a [GameServiceException] if fetching the game details fails.
-  Future<Game> getGame(int gameId) async {
-    final token = await _authStorageService.getSessionToken();
-    final url = Uri.parse('$_baseUrl/game/$gameId');
-    final response = await http.get(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return Game.fromJson(data);
-    } else {
-      throw GameServiceException(GameServiceErrorType.fetchFailed);
-    }
-  }
-
-  /// Restores a game session using the saved game ID.
-  /// If a saved game ID is found, attempts to fetch the game details by calling [getGame].
-  /// If loading the game fails, the saved game ID is cleared and the error is rethrown.
-  /// Returns the [Game] object if the restore is successful, or null if no saved game exists.
-  Future<Game?> restoreGame() async {
-    final savedGameId = await _gameStorageService.getGameId();
+  /// Submit a vote for a category in a specific round
+  Future<List<VoteCount>> submitVote(
+    String gameId,
+    int round,
+    String userId,
+    String categoryId,
+  ) async {
     try {
-      if (savedGameId != null) {
-        return await getGame(savedGameId);
-      } else {
-        return null;
-      }
-    } catch (e) {
-      // If loading fails (e.g., fetch failed), clear the saved game id.
-      await _gameStorageService.clearGameId();
+      final response = await _client.post<List<dynamic>>(
+        Endpoints.submitVote.replaceAll('{gameId}', gameId),
+        data: {
+          'round': round,
+          'userId': userId,
+          'categoryId': categoryId,
+        },
+      );
+      final data = response.data!;
+      return data
+          .map((item) => VoteCount.fromJson(item as Map<String, dynamic>))
+          .toList();
+    } on DioException {
       rethrow;
     }
   }
 
-  /// Allows a player to join an existing game session with the provided [gameId].
-  /// Returns the updated [Game] object if join is successful.
-  /// Throws a [GameServiceException] if joining the game fails.
-  Future<Game> joinGame(int gameId) async {
-    final token = await _authStorageService.getSessionToken();
-    final url = Uri.parse('$_baseUrl/game/$gameId/join');
-    final response = await http.post(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final game = Game.fromJson(data);
-      await _gameStorageService.saveGameId(game.id);
-      return game;
-    } else {
-      throw GameServiceException(GameServiceErrorType.joinFailed);
+  /// Submit an answer for a specific round
+  Future<AnswerResult> submitAnswer(
+    String gameId,
+    int round,
+    String userId,
+    String answerText,
+  ) async {
+    try {
+      final response = await _client.post<Map<String, dynamic>>(
+        Endpoints.submitAnswer.replaceAll('{gameId}', gameId),
+        data: {
+          'round': round,
+          'userId': userId,
+          'answer': answerText,
+        },
+      );
+      return AnswerResult.fromJson(response.data!);
+    } on DioException {
+      rethrow;
+    }
+  }
+
+  /// Fetch the leaderboard for the given game
+  Future<List<GamePlayer>> getLeaderboard(String gameId) async {
+    try {
+      final response = await _client.get<List<dynamic>>(
+        Endpoints.getLeaderboard.replaceAll('{gameId}', gameId),
+      );
+      final data = response.data!;
+      return data
+          .map((item) => GamePlayer.fromJson(item as Map<String, dynamic>))
+          .toList();
+    } on DioException {
+      rethrow;
     }
   }
 }

@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/system_message_provider.dart';
-import '../models/system_message.dart';
+import '../providers/message_provider.dart';
+import '../models/message.dart';
+import 'text/body_text.dart';
 
 class MessageBanner extends StatelessWidget {
   const MessageBanner({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SystemMessageProvider>(
-      builder: (context, systemMessageProvider, child) {
-        final systemMessages = systemMessageProvider.systemMessages;
+    return Consumer<MessageProvider>(
+      builder: (context, messageProvider, child) {
+        final messages = messageProvider.messages;
 
-        if (systemMessages.isEmpty) {
+        if (messages.isEmpty) {
           return SizedBox.shrink(); // No messages to display
         }
 
         return Column(
-          children: systemMessages.map((systemMessage) {
+          children: messages.map((systemMessage) {
             // Automatically remove the message after 4 seconds
             Future.delayed(const Duration(seconds: 4), () {
-              systemMessageProvider.removeMessage(systemMessage);
+              messageProvider.removeMessage(systemMessage);
             });
 
             return Container(
@@ -36,10 +37,9 @@ class MessageBanner extends StatelessWidget {
                   ),
                   const SizedBox(width: 12.0),
                   Expanded(
-                    child: Text(
-                      systemMessage.content,
-                      style: const TextStyle(color: Colors.white),
-                      softWrap: true,
+                    child: BodyText(
+                      text: systemMessage.content,
+                      color: Colors.white,
                     ),
                   ),
                 ],
@@ -51,25 +51,29 @@ class MessageBanner extends StatelessWidget {
     );
   }
 
-  Color _getMessageColor(SystemMessageType type) {
+  Color _getMessageColor(MessageType type) {
     switch (type) {
-      case SystemMessageType.error:
+      case MessageType.error:
         return Colors.red;
-      case SystemMessageType.warning:
+      case MessageType.warning:
         return Colors.orange;
-      case SystemMessageType.success:
+      case MessageType.success:
         return Colors.green;
+      case MessageType.chat:
+        return Colors.blue;
     }
   }
 
-  IconData _getMessageIcon(SystemMessageType type) {
+  IconData _getMessageIcon(MessageType type) {
     switch (type) {
-      case SystemMessageType.error:
+      case MessageType.error:
         return Icons.error;
-      case SystemMessageType.warning:
+      case MessageType.warning:
         return Icons.warning;
-      case SystemMessageType.success:
+      case MessageType.success:
         return Icons.check_circle;
+      case MessageType.chat:
+        return Icons.chat;
     }
   }
 }

@@ -1,63 +1,58 @@
-import 'chat.dart';
-import 'player.dart';
-import 'category.dart';
-import 'round.dart';
+// lib/src/models/game.dart
+enum GameStatus { waiting, inProgress, ended }
 
-/// Represents a game session.
-class Game {
-  final int id; // ID of the game session (game code)
-  final int host; // ID of the user hosting the game
-  final List<Player> players; // List of players in the game
-  final GameState gameState; // Current state of the game
-  final List<Category> categories; // List of categories with questions
-  final Chat chat; // Game chat
-  final Round round; // Current round details
-
-  Game({
-    required this.id,
-    required this.host,
-    required this.players,
-    required this.gameState,
-    required this.categories,
-    required this.chat,
-    required this.round,
-  });
-
-  /// Creates a [Game] from JSON.
-  factory Game.fromJson(Map<String, dynamic> json) {
-    return Game(
-      id: json['id'],
-      host: json['host'], // Parse the host ID
-      players: (json['players'] as List)
-          .map((playerJson) => Player.fromJson(playerJson))
-          .toList(),
-      gameState: GameState.values.firstWhere(
-          (e) => e.toString().split('.').last == json['game_state']),
-      categories: (json['categories'] as List)
-          .map((categoryJson) => Category.fromJson(categoryJson))
-          .toList(),
-      chat: Chat.fromJson(json['chat']),
-      round: Round.fromJson(json['current_round']),
-    );
-  }
-
-  /// Converts a [Game] to JSON.
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'host': host, // Include the host ID
-      'players': players.map((player) => player.toJson()).toList(),
-      'game_state': gameState.toString().split('.').last,
-      'categories': categories.map((category) => category.toJson()).toList(),
-      'chat': chat.toJson(),
-      'current_round': round.toJson(),
-    };
+GameStatus _gameStatusFromString(String s) {
+  switch (s) {
+    case 'waiting':
+      return GameStatus.waiting;
+    case 'in_progress':
+      return GameStatus.inProgress;
+    case 'ended':
+      return GameStatus.ended;
+    default:
+      throw Exception('Unknown GameStatus: $s');
   }
 }
 
-/// Represents the state of the game.
-enum GameState {
-  waiting, // Waiting for players to join
-  inProgress, // Game is currently in progress
-  completed, // Game has ended
+String _gameStatusToString(GameStatus s) {
+  switch (s) {
+    case GameStatus.waiting:
+      return 'waiting';
+    case GameStatus.inProgress:
+      return 'in_progress';
+    case GameStatus.ended:
+      return 'ended';
+  }
+}
+
+class Game {
+  final String id;
+  final String? lobbyCode;
+  final GameStatus status;
+  final int currentRound;
+  final DateTime createdAt;
+
+  Game({
+    required this.id,
+    this.lobbyCode,
+    required this.status,
+    required this.currentRound,
+    required this.createdAt,
+  });
+
+  factory Game.fromJson(Map<String, dynamic> json) => Game(
+        id: json['id'] as String,
+        lobbyCode: json['lobby_code'] as String?,
+        status: _gameStatusFromString(json['status'] as String),
+        currentRound: json['current_round'] as int,
+        createdAt: DateTime.parse(json['created_at'] as String),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'lobby_code': lobbyCode,
+        'status': _gameStatusToString(status),
+        'current_round': currentRound,
+        'created_at': createdAt.toIso8601String(),
+      };
 }

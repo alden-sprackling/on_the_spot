@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/system_message.dart';
+import '../models/message.dart';
 import '../providers/auth_provider.dart';
-import '../providers/system_message_provider.dart';
+import '../providers/message_provider.dart';
 import '../utils/formatters.dart';
 import '../widgets/icons/back_icon_button.dart';
 import '../widgets/input_fields/input_field.dart';
@@ -26,40 +26,54 @@ class EnterCodeScreenState extends State<EnterCodeScreen> {
   @override
   void initState() {
     super.initState();
-
-    // Add a listener to automatically verify the code when max length is reached
-    _codeController.addListener(() {
-      if (_codeController.text.length == maxCodeLength) {
-        _verifyCode(); // Automatically verify the code
-      }
-    });
   }
 
   Future<void> _verifyCode() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final systemMessageProvider = Provider.of<SystemMessageProvider>(context, listen: false);
+    final messageProvider = Provider.of<MessageProvider>(context, listen: false);
 
     try {
       // Verify the SMS code
-      await authProvider.verifySMSCode(widget.phoneNumber, _codeController.text.trim());
+      await authProvider.verifyCode(widget.phoneNumber, _codeController.text.trim());
 
       // Navigate to the next screen or perform post-verification actions
       if (!mounted) return;
-      systemMessageProvider.addMessage(
-        SystemMessage(
+      messageProvider.addMessage(
+        Message(
           content: "Code verified successfully!",
-          type: SystemMessageType.success,
+          type: MessageType.success,
         ),
       );
 
-      // Example: Navigate to a home screen or dashboard
-      Navigator.pushReplacementNamed(context, '/home');
+      if (authProvider.user?.name == null) {
+        // If the user is not authenticated, navigate to the next screen
+        Navigator.pushNamedAndRemoveUntil(
+          context, 
+          '/set_name',
+          (Route<dynamic> route) => false,
+        );
+      } else if (authProvider.user?.profilePic == null) {
+        // If the user has not set a profile picture, navigate to the next screen
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/set_profile_picture',
+          (Route<dynamic> route) => false,
+        );
+      } else {
+        // If the user is already authenticated, navigate to the home screen
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/home',
+          (Route<dynamic> route) => false,
+        );
+
+      }
     } catch (e) {
       // Show error message if verification fails
-      systemMessageProvider.addMessage(
-        SystemMessage(
+      messageProvider.addMessage(
+        Message(
           content: e.toString(),
-          type: SystemMessageType.error,
+          type: MessageType.error,
         ),
       );
     }

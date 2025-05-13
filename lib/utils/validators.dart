@@ -1,58 +1,26 @@
-import '../exceptions/exceptions.dart';
+import 'package:on_the_spot/models/errors.dart';
 
-/// Validates a phone number input.
-///
-/// The phone number must:
-/// - Contain exactly 10 digits.
-/// - Contain no spaces or symbols.
-///
-/// On successful validation, prepends the U.S. country code "+1" to the phone number.
-///
-/// Parameters:
-/// - [phoneNumber]: The phone number to validate.
-///
-/// Throws:
-/// - An [InputException] if the phone number is invalid.
-///
-/// Returns:
-/// - The validated phone number as a [String] with "+1" prepended.
 String validatePhoneNumber(String phoneNumber) {
+  // Remove all non-digit characters.
+  String digitsOnly = phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
   final phoneRegex = RegExp(r'^\d{10}$');
 
-  if (!phoneRegex.hasMatch(phoneNumber)) {
-    throw InputException(InputErrorType.invalidPhoneNumberFormat);
+  if (!phoneRegex.hasMatch(digitsOnly)) {
+    throw InputError("Phone number must be 10 digits long");
   }
 
-  return '+1$phoneNumber';
+  return '+1$digitsOnly';
 }
 
-/// Validates a username.
-/// 
-/// The username must:
-/// - Be 1 to 12 characters long.
-/// - Contain no spaces.
-/// 
-/// Parameters:
-/// - [username]: The username to validate.
-/// 
-/// Throws:
-/// - An [InputException] if the username is invalid.
-/// 
-/// Returns:
-/// - The validated [username] as a [String] if it is valid.
 String validateUsername(String username) {
-  // Check if the username is empty or exceeds the length limit
-  if (username.isEmpty || username.length > 12) {
-    throw InputException(
-      InputErrorType.invalidUsernameLength,
-    );
+  // Check if the username is < 3 or > 12 characters long
+  if (username.length < 3 || username.length > 12) {
+    throw InputError("Username must be between 3 and 12 characters long");
   }
 
   // Check if the username contains spaces
   if (username.contains(' ')) {
-    throw InputException(
-      InputErrorType.invalidUsernameFormat,
-    );
+    throw InputError("Username cannot contain spaces");
   }
 
   // If valid, return the username

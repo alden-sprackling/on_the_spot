@@ -34,7 +34,6 @@ class PhoneNumberFormatter extends TextInputFormatter {
     TextEditingValue oldValue, 
     TextEditingValue newValue
   ) {
-
     // Remove all non-digit characters.
     String digitsOnly = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
 
@@ -43,9 +42,21 @@ class PhoneNumberFormatter extends TextInputFormatter {
       digitsOnly = digitsOnly.substring(0, maxLength);
     }
 
+    String formatted = "";
+    final len = digitsOnly.length;
+    if (len == 0) {
+      formatted = "";
+    } else if (len < 4) {
+      formatted = "($digitsOnly";
+    } else if (len < 7) {
+      formatted = "(${digitsOnly.substring(0,3)}) ${digitsOnly.substring(3)}";
+    } else {
+      formatted = "(${digitsOnly.substring(0,3)}) ${digitsOnly.substring(3,6)}-${digitsOnly.substring(6)}";
+    }
+
     return TextEditingValue(
-      text: digitsOnly,
-      selection: TextSelection.collapsed(offset: digitsOnly.length),
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }

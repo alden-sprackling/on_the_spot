@@ -1,57 +1,88 @@
 import 'package:flutter/material.dart';
-import 'package:on_the_spot/widgets/icons/settings_icon_button.dart';
-import '../widgets/user_widget.dart';
-import '../widgets/buttons/button.dart';
-import '/theme/app_colors.dart';
+import 'package:on_the_spot/providers/tier_provider.dart';
+import 'package:on_the_spot/providers/user_provider.dart';
+import 'package:on_the_spot/widgets/icons/user_icon_button.dart';
+import 'package:provider/provider.dart';
 import 'base_screen.dart';
+import 'play_screen.dart';
+import 'rankings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  HomeScreenState createState() => HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> {
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  // Your two pages
+  final List<Widget> _pages = [
+    const PlayScreen(),
+    ChangeNotifierProvider(
+      create: (_) {
+        final prov = TierProvider();
+        prov.fetchTierStats();
+        return prov;
+      },
+      child: const RankingsScreen(),
+    ),
+  ];
+
+  void _onTap(int idx) => setState(() => _currentIndex = idx);
+
   @override
   Widget build(BuildContext context) {
     return BaseScreen(
-      resizeToAvoidBottomInset: false, // Prevents screen from resizing when keyboard appears
-      leading: null,
-      actions: [
-        SettingsIconButton(),
-      ],
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      leadingWidth: 150,
+      actions: [],
+      leading: Consumer<UserProvider>(
+        builder: (context, userProvider, _) {
+          final user = userProvider.user;
+          if (user == null) {
+            return const SizedBox.shrink();
+          }
+          return UserIconButton(
+            profilePic: user.profilePic!,
+            name: user.name!,
+            iq: user.iq,
+            onPressed: () {
+              // Optionally handle tap
+            },
+          );
+        },
+      ),
+      // inject the current page’s content directly into BaseScreen’s body
       columnWidgets: [
-        UserWidget(
-          containerWidthPercent: .75, // Adjust width to 75% of the screen
+        Expanded(child: _pages[_currentIndex]),
+      ],
+      mainAxisAlignment: MainAxisAlignment.start,
+      bottomNavigationBar: Theme(
+        data: Theme.of(context).copyWith(
+          splashFactory: NoSplash.splashFactory,
+          highlightColor: Colors.transparent,
         ),
-        Column(
-          children: [
-            Button(
-              text: "JOIN GAME",
-              onPressed: () {
-                try {
-                  Navigator.pushNamed(context, '/join_game'); // Navigate to the next screen
-                } catch (e) {
-                }
-              },
-              backgroundColor: AppColors.primaryColor,
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: _onTap,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Play',
             ),
-            SizedBox(height: 24),
-            Button(
-              text: "CREATE GAME",
-              onPressed: () {
-                try {
-                  Navigator.pushNamed(context, '/create_game'); // Navigate to the next screen
-                } catch (e) {
-                }
-              },
-              backgroundColor: AppColors.secondaryColor,
+            BottomNavigationBarItem(
+              icon: Icon(Icons.leaderboard),
+              label: 'Rankings',
             ),
           ],
         ),
-      ],
+      ),
     );
   }
 }

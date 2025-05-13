@@ -10,14 +10,19 @@ class AppTheme {
         elevation: 0,
         iconTheme: IconThemeData(
           color: AppColors.lightGrey,
-          size: 48.0, // Set the size of icons in the AppBar
+          size: 48.0,
         ),
       ),
       iconTheme: IconThemeData(
-        size: 48.0, // Set the size of all icons
+        size: 48.0,
       ),
       scaffoldBackgroundColor: Colors.white,
       textTheme: GoogleFonts.grandstanderTextTheme(),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: Colors.white,
+        selectedItemColor: Colors.grey,
+        unselectedItemColor: AppColors.lightGrey,
+      ),
     );
   }
 }

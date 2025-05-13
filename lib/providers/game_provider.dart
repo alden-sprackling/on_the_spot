@@ -1,185 +1,187 @@
+// lib/src/providers/game_provider.dart
+
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:on_the_spot/services/game_web_socket_service.dart';
-import '../exceptions/exceptions.dart';
-import '../models/game.dart';
-import '../models/player.dart';
-import '../services/chat_web_socket_service.dart';
-import '../services/game_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:on_the_spot/api/endpoints.dart';
+import 'package:on_the_spot/models/errors.dart';
+import 'package:on_the_spot/models/message.dart';
+import 'package:on_the_spot/providers/message_provider.dart';
+import '../services/category_service.dart';
+import '../services/chat_service.dart';
+import '../services/socket_service.dart';
+import '../models/category.dart';
+import '../models/chat_message.dart';
+import '../models/game_player.dart';
+import '../models/question.dart';
+import 'user_provider.dart';
 
+/// Manages game state, real-time updates, and actions via services and SocketService
 class GameProvider extends ChangeNotifier {
-  Game? _game;
-  final GameService _gameService;
-  GameWebSocketService? _gameWS;
-  ChatWebSocketService? _chatWS;
+  final CategoryService _categoryService = CategoryService();
+  final ChatService _chatService = ChatService();
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  final UserProvider _userProvider;
+  final MessageProvider _messageProvider;
 
-  GameProvider({
-    required GameService gameService,
-  })  : _gameService = gameService;
+  SocketService? _socket;
 
-  /// Returns the current [Game] object.
-  Game? get game => _game;
+  String? _gameId;
+  int _round = 0;
+  int _difficulty = 1;
+  List<Category> _categories = [];
+  Map<String, int> _voteTally = {};
+  String? _chosenCategory;
+  Question? _currentQuestion;
+  Map<String, dynamic>? _answerResult;
+  List<GamePlayer> _roundLeaderboard = [];
+  List<GamePlayer> _finalLeaderboard = [];
+  final List<ChatMessage> _chatMessages = [];
+  bool _isLoading = false;
+  bool _answered = false;
 
-  /// Returns the current game.
-  /// Throws a [GameException] if no game is loaded.
-  Game get currentGame {
-    if (_game == null) {
-      throw GameException(GameErrorType.gameNotFound);
-    }
-    return _game!;
-  }
+  GameProvider(this._userProvider, this._messageProvider);
 
-  /// Returns a list of players that are currently connected.
-  List<Player> get connectedPlayers {
-    return currentGame.players.where((player) => player.isConnected).toList();
-  }
+  String? get gameId => _gameId;
+  int get round => _round;
+  int get difficulty => _difficulty;
+  List<Category> get categories => List.unmodifiable(_categories);
+  Map<String, int> get voteTally => Map.unmodifiable(_voteTally);
+  String? get chosenCategory => _chosenCategory;
+  Question? get currentQuestion => _currentQuestion;
+  Map<String, dynamic>? get answerResult => _answerResult;
+  List<GamePlayer> get roundLeaderboard => List.unmodifiable(_roundLeaderboard);
+  List<GamePlayer> get finalLeaderboard => List.unmodifiable(_finalLeaderboard);
+  List<ChatMessage> get chatMessages => List.unmodifiable(_chatMessages);
+  bool get isLoading => _isLoading;
+  bool get hasAnswered => _answered;
 
-  /// Checks for an existing game session by retrieving the saved game ID.
-  /// If a saved game ID is found, attempts to load the game and returns it.
-  /// If loading fails, the saved game ID is cleared.
-  /// Does not update the current game state automatically.
-  Future<Game?> restoreGame() async {
+  /// Initialize game: set gameId, fetch categories, connect socket, and register listeners
+  Future<void> initGame(String gameId) async {
+    _setLoading(true);
     try {
-      return await _gameService.restoreGame();
+      _gameId = gameId;
+      // initial categories
+      _categories = await _categoryService.getAvailableCategories(gameId);
+
+      // connect socket
+      final token = await _storage.read(key: 'access_token');
+      if (token == null) throw ApiError('Not authenticated');
+      _socket?.dispose();
+      _socket = SocketService(Endpoints.wsUrl, token);
+
+      _socket!.roundIntroduction.listen((data) {
+        _round = data['roundNumber'] as int;
+        _difficulty = data['difficulty'] as int;
+        _voteTally.clear();
+        _chosenCategory = null;
+        _answered = false;
+        notifyListeners();
+      });
+
+      _socket!.categoryVoteUpdate.listen((data) {
+        final votes = data['votes'] as List<dynamic>;
+        _voteTally = {for (var v in votes) v['categoryId'] as String: v['count'] as int};
+        notifyListeners();
+      });
+
+      _socket!.categoryChosen.listen((data) {
+        _chosenCategory = data['categoryId'] as String;
+        notifyListeners();
+      });
+
+      _socket!.playerUp.listen((data) async {
+        // when it's this player's turn, nothing to do here
+      });
+
+      _socket!.question.listen((data) {
+        _currentQuestion = Question.fromJson(data);
+        notifyListeners();
+      });
+
+      _socket!.answerResult.listen((data) {
+        _answerResult = data;
+        _answered = true;
+        notifyListeners();
+      });
+
+      _socket!.roundLeaderboard.listen((data) {
+        _roundLeaderboard = (data as List<dynamic>)
+            .map((e) => GamePlayer.fromJson(e as Map<String, dynamic>))
+            .toList();
+        notifyListeners();
+      });
+
+      _socket!.finalLeaderboard.listen((data) {
+        _finalLeaderboard = (data as List<dynamic>)
+            .map((e) => GamePlayer.fromJson(e as Map<String, dynamic>))
+            .toList();
+        notifyListeners();
+      });
+
+      _socket!.chatMessage.listen((data) {
+        final msg = ChatMessage.fromJson(data);
+        // TODO: idk
+        _messageProvider.addMessage(
+          Message(
+            content: msg.message,
+            type: MessageType.chat,
+          ),
+        );
+        _chatMessages.add(msg);
+        notifyListeners();
+      });
     } catch (e) {
-      rethrow;
+      throw ApiError('Failed to initialize game');
+    } finally {
+      _setLoading(false);
     }
   }
 
-  /// Creates a new game session on the backend and saves the game ID.
-  /// On success, updates the local [Game] object and notifies listeners.
-  /// Throws an exception if game creation fails.
-  Future<void> createGame() async {
+  /// Vote for a category in current round
+  Future<void> voteCategory(String categoryId) async {
+    if (_gameId == null || _userProvider.user == null) {
+      throw ApiError('Not ready');
+    }
     try {
-      _game = await _gameService.createGame();
-      notifyListeners();
+      _socket!.voteCategory(_gameId!, _round, _userProvider.user!.id, categoryId);
     } catch (e) {
-      rethrow;
+      throw ApiError('Failed to vote');
     }
   }
 
-  /// Loads game session details for the provided [gameId] from the backend.
-  /// On success, updates the local [Game] object and notifies listeners.
-  /// Throws an exception if loading the game fails.
-  Future<void> loadGame(int gameId) async {
+  /// Submit an answer for current round
+  Future<void> submitAnswer(String answer) async {
+    if (_gameId == null || _userProvider.user == null) {
+      throw ApiError('Not ready');
+    }
     try {
-      _game = await _gameService.getGame(gameId);
-      notifyListeners();
+      _socket!.submitAnswer(_gameId!, _round, _userProvider.user!.id, answer);
     } catch (e) {
-      rethrow;
+      throw ApiError('Failed to submit answer');
     }
   }
 
-  /// Allows the player to join a game session with the provided [gameId] and saves the game ID.
-  /// On success, updates the local [Game] object and notifies listeners.
-  /// Throws an exception if joining the game fails.
-  Future<void> joinGame(int gameId) async {
+  /// Send chat message
+  Future<void> sendMessage(String message) async {
+    if (_gameId == null || _userProvider.user == null) {
+      throw ApiError('Not ready');
+    }
     try {
-      _game = await _gameService.joinGame(gameId);
-      notifyListeners();
+      await _chatService.sendMessage(_gameId!, _userProvider.user!.id, message);
     } catch (e) {
-      rethrow;
+      throw ApiError('Failed to send message');
     }
   }
 
-  /// Connects to the game WebSocket for real-time game updates for the provided [gameId].
-  /// Listens to incoming updates and updates the local [Game] object.
-  void connectToGameWebSocket(int gameId) {
-    try {
-      _gameWS = GameWebSocketService(gameId: gameId);
-      _gameWS!.gameStream.listen(
-        (updatedGame) {
-          _game = updatedGame;
-          notifyListeners();
-        },
-        onError: (error) {
-          print("Game WebSocket error: $error");
-        },
-        onDone: () {
-          print("Game WebSocket connection closed");
-        },
-      );
-    } catch (e) {
-      print("Failed to connect to Game WebSocket: $e");
-    }
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
   }
 
-  /// Connects to the chat WebSocket for receiving new chat messages for the provided [gameId].
-  /// Updates the local chat messages list within the [Game] object on receiving a new message.
-  void connectToChatWebSocket(int gameId) {
-    try {
-      _chatWS = ChatWebSocketService(gameId: gameId);
-      _chatWS!.chatStream.listen(
-        (chatMessage) {
-          try {
-            // Use the getter to ensure the game is loaded.
-            final updatedChatMessages = [
-              ...currentGame.chat.chatMessages.map((msg) => msg.toJson()).toList(),
-              chatMessage.toJson(),
-            ];
-            _game = Game.fromJson({
-              ..._game!.toJson(),
-              'chat': {'messages': updatedChatMessages},
-            });
-            notifyListeners();
-          } catch (e) {
-            print("Chat update failed: $e");
-          }
-        },
-        onError: (error) {
-          print("Chat WebSocket error: $error");
-        },
-        onDone: () {
-          print("Chat WebSocket connection closed");
-        },
-      );
-    } catch (e) {
-      print("Failed to connect to Chat WebSocket: $e");
-    }
-  }
-
-  /// Disconnects both WebSocket connections.
-  void disconnectWebSockets() {
-    _gameWS?.disconnect();
-    _chatWS?.disconnect();
-  }
-
-  /// Sends a start game command through the game WebSocket.
-  /// Throws an exception if the command fails to send.
-  void startGame() {
-    try {
-      _gameWS?.startGame();
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// Sends a vote for a category through the game WebSocket using [categoryName].
-  /// Throws an exception if the vote command fails.
-  void voteOnCategory(String categoryName) {
-    try {
-      _gameWS?.voteOnCategory(categoryName);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// Sends an answer for a question through the game WebSocket with the given [questionId] and [answer].
-  /// Throws an exception if the answer command fails.
-  void answerQuestion(int questionId, String answer) {
-    try {
-      _gameWS?.answerQuestion(questionId, answer);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// Sends a chat message through the chat WebSocket using the provided [message].
-  /// Throws an exception if sending the chat message fails.
-  void sendChat(String message) {
-    try {
-      _chatWS?.sendChat(message);
-    } catch (e) {
-      rethrow;
-    }
+  @override
+  void dispose() {
+    _socket?.dispose();
+    super.dispose();
   }
 }

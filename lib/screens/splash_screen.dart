@@ -1,12 +1,14 @@
-// lib/screens/splash_screen.dart
+// lib/src/ui/splash_screen.dart
+
 import 'package:flutter/material.dart';
+import 'package:on_the_spot/providers/user_provider.dart';
 import 'package:provider/provider.dart';
-import '../exceptions/exceptions.dart';
 import '../providers/auth_provider.dart';
 
+/// Splash screen that checks authentication and directs to the correct screen.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
-  
+
   @override
   SplashScreenState createState() => SplashScreenState();
 }
@@ -15,38 +17,63 @@ class SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _authenticate();
+    // Delay to ensure context is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAuthentication();
+    });
   }
-  
-  /// Handles the authentication process and navigates accordingly.
-  Future<void> _authenticate() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+  Future<void> _checkAuthentication() async {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final user = Provider.of<UserProvider>(context, listen: false);
     try {
-      // If this completes without throwing, authentication is successful.
-      await authProvider.verifyAuthentication();
-      if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/home');
-    } catch (e) {
-      if (!mounted) return;
-      if (e is AuthServiceException) {
-        // Authentication error – navigate to enter phone number screen to authenticate.
-        Navigator.pushReplacementNamed(context, '/enter_phone_number');
-      } else if (e is UserServiceException) {
-        // User data error – for example, if fetching user failed,
-        // go to enter name screen to create a user.
-        Navigator.pushReplacementNamed(context, '/set_name');
+      await auth.loadUserFromStorage();
+      if (!auth.isAuthenticated) {
+        if (!mounted) return;
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/enter_phone_number',
+          (Route<dynamic> route) => false,
+        );
+      } else if (auth.user!.name == null) {
+        if (!mounted) return;
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/set_name',
+          (Route<dynamic> route) => false,
+        );
+      } else if (auth.user!.profilePic == null) {
+        if (!mounted) return;
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/set_profile_picture',
+          (Route<dynamic> route) => false,
+        );
       } else {
-        // Fallback for any other errors.
-        Navigator.pushReplacementNamed(context, '/enter_phone_number');
+        user.fetchProfile();
+        if (!mounted) return;
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/home',
+          (Route<dynamic> route) => false,
+        );
       }
+    } catch (e) {
+      // On error, go to phone entry
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/enter_phone_number',
+        (Route<dynamic> route) => false,
+      );
     }
   }
 
-  
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(child: CircularProgressIndicator()),
+    return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 }

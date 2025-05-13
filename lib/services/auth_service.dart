@@ -1,100 +1,79 @@
-// lib/services/auth_service.dart
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import '../constants/constants.dart';
-import '../exceptions/exceptions.dart';
-import 'auth_storage_service.dart';
+// lib/src/services/auth_service.dart
 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../api/api_client.dart';
+import '../api/endpoints.dart';
+import '../models/user.dart';
+
+class Tokens {
+  final String accessToken;
+  final String refreshToken;
+
+  Tokens({required this.accessToken, required this.refreshToken});
+
+  factory Tokens.fromJson(Map<String, dynamic> json) => Tokens(
+        accessToken: json['accessToken'] as String,
+        refreshToken: json['refreshToken'] as String,
+      );
+}
+
+class AuthResult {
+  final User user;
+  final Tokens tokens;
+
+  AuthResult({required this.user, required this.tokens});
+
+  factory AuthResult.fromJson(Map<String, dynamic> json) => AuthResult(
+        user: User.fromJson(json['user'] as Map<String, dynamic>),
+        tokens: Tokens.fromJson(json['tokens'] as Map<String, dynamic>),
+      );
+}
+
+/// Service for authentication-related API calls
 class AuthService {
-  final String _baseUrl = baseURL;
-  final AuthStorageService _authStorageService = AuthStorageService();
+  final ApiClient _client = ApiClient();
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
-  /// Sends an SMS code to the provided [phoneNumber] for authentication.
-  /// Returns true if the SMS code is sent successfully.
-  /// Throws an [AuthenticationException] if the request fails.
-  Future<bool> sendSMSCode(String phoneNumber) async {
-    final url = Uri.parse('$_baseUrl/auth/sendSMSCode');
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'phone_number': phoneNumber}),
+  /// Send an SMS verification code to a phone number
+  Future<void> sendCode(String phone) async {
+    await _client.post<void>(
+      Endpoints.sendCode,
+      data: {'phone': phone},
     );
-    if (response.statusCode == 200) {
-      return true;
-    } else {
-      throw AuthenticationException(AuthenticationErrorType.failedToSend);
-    }
   }
 
-  /// Verifies the SMS authentication code for the given [phoneNumber] and [code].
-  /// On success, this method saves the session and refresh tokens in secure storage
-  /// and returns true.
-  /// Throws an [AuthenticationException] if the verification fails.
-  Future<bool> verifySMSCode(String phoneNumber, String code) async {
-    final url = Uri.parse('$_baseUrl/auth/verifySMSCode');
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'phone_number': phoneNumber,
-        'code': code,
-      }),
+  /// Verify the code and retrieve user + tokens, then store tokens
+  Future<AuthResult> verifyCode(String phone, String code) async {
+    final response = await _client.post<Map<String, dynamic>>(
+      Endpoints.verifyCode,
+      data: {'phone': phone, 'code': code},
     );
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final sessionToken = data['access_token'];
-      final refreshToken = data['refresh_token'];
+    final AuthResult result = AuthResult.fromJson(response.data!);
+    // Persist tokens
+    await _storage.write(key: 'access_token', value: result.tokens.accessToken);
+    await _storage.write(key: 'refresh_token', value: result.tokens.refreshToken);
 
-      // Save tokens securely.
-      return await _authStorageService.saveTokens(sessionToken, refreshToken);
-    } else {
-      throw AuthenticationException(AuthenticationErrorType.failedToVerify);
-    }
+    return result;
   }
 
-  /// Refreshes the session token using the provided [savedRefreshToken].
-  /// On success, saves the new session and refresh tokens in secure storage
-  /// and returns the new session token.
-  /// Throws an [AuthServiceException] if the refresh operation fails.
-  Future<String> refreshSessionToken(String savedRefreshToken) async {
-    final url = Uri.parse('$_baseUrl/auth/refreshSessionToken');
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'refresh_token': savedRefreshToken}),
+  /// Refresh access/refresh tokens, store them, and return
+  Future<Tokens> refreshTokens(String refreshToken) async {
+    final response = await _client.post<Map<String, dynamic>>(
+      Endpoints.refreshToken,
+      data: {'refreshToken': refreshToken},
     );
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final newSessionToken = data['access_token'];
-      final newRefreshToken = data['refresh_token'];
-      await _authStorageService.saveTokens(newSessionToken, newRefreshToken);
-      return newSessionToken;
-    } else {
-      throw AuthServiceException(AuthServiceErrorType.refreshFailed);
-    }
-  }
 
-  /// Validates the stored session token.
-  /// If the current session token is expired (HTTP 401), attempts to refresh it
-  /// using the stored refresh token.
-  /// Returns true if the token is valid or successfully refreshed.
-  /// Throws an [AuthServiceException] if the refresh fails.
-  Future<bool> validateSessionToken() async {
-    final savedSessionToken = await _authStorageService.getSessionToken();
-    final savedRefreshToken = await _authStorageService.getRefreshToken();
-    final url = Uri.parse('$_baseUrl/auth/validateSessionToken');
-    final response = await http.get(url, headers: {'Authorization': 'Bearer $savedSessionToken'}); 
-    if (response.statusCode == 200) {
-      return true;
-    } else if (response.statusCode == 401) {
-      try {
-        await refreshSessionToken(savedRefreshToken);
-        return true;
-      } catch (e) {
-        throw AuthServiceException(AuthServiceErrorType.refreshFailed);
-      }
-    } else {
-      throw AuthServiceException(AuthServiceErrorType.signInFailed);
-    }
+    // Some controllers wrap tokens inside a `tokens` object
+    final tokenJson = (response.data!.containsKey('tokens')
+            ? response.data!['tokens']
+            : response.data) as Map<String, dynamic>;
+
+    final tokens = Tokens.fromJson(tokenJson);
+
+    // Persist new tokens
+    await _storage.write(key: 'access_token', value: tokens.accessToken);
+    await _storage.write(key: 'refresh_token', value: tokens.refreshToken);
+
+    return tokens;
   }
 }
