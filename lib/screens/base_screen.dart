@@ -62,12 +62,6 @@ class BaseScreenState extends State<BaseScreen> {
       bottomNavigationBar: widget.bottomNavigationBar,
       body: Stack(
         children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: MessageBanner(),
-          ),
           Padding(
             padding: const EdgeInsets.all(32.0),
             child: Center(
@@ -83,6 +77,12 @@ class BaseScreenState extends State<BaseScreen> {
                 ),
               ),
             ),
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: MessageBanner(),
           ),
         ],
       ),
