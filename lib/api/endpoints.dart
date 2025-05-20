@@ -14,6 +14,7 @@ class Endpoints {
   static const String createLobby = '/lobbies';
   static const String getLobby = '/lobbies/{code}';
   static const String joinLobby = '/lobbies/{code}/join';
+  static const String autoJoinLobby = '/lobbies/auto-join';
   static const String leaveLobby = '/lobbies/{code}/leave';
   static const String toggleLobbyPrivacy = '/lobbies/{code}/privacy';
 

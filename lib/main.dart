@@ -5,6 +5,7 @@ import 'package:on_the_spot/providers/lobby_provider.dart';
 import 'package:on_the_spot/providers/message_provider.dart';
 import 'package:on_the_spot/providers/picture_provider.dart';
 import 'package:on_the_spot/providers/tier_provider.dart';
+import 'package:on_the_spot/screens/game_screen.dart';
 import 'package:on_the_spot/screens/lobby_screen.dart';
 import 'package:on_the_spot/screens/set_profile_picture_screen.dart';
 import 'package:on_the_spot/screens/splash_screen.dart';
@@ -62,6 +63,7 @@ class OnTheSpotApp extends StatelessWidget {
         '/home': (context) => const HomeScreen(),
         '/join_game': (context) => JoinGameScreen(),
         '/lobby': (context) => const LobbyScreen(),
+        '/game': (context) => const GameScreen(),
       },
     );
   }

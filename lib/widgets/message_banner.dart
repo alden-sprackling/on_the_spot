@@ -14,7 +14,7 @@ class MessageBanner extends StatelessWidget {
         final messages = messageProvider.messages;
 
         if (messages.isEmpty) {
-          return SizedBox.shrink(); // No messages to display
+          return SizedBox.shrink();
         }
 
         return Column(
@@ -24,25 +24,32 @@ class MessageBanner extends StatelessWidget {
               messageProvider.removeMessage(systemMessage);
             });
 
-            return Container(
-              width: double.infinity, // Stretch across the screen
-              color: _getMessageColor(systemMessage.type),
-              padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    _getMessageIcon(systemMessage.type),
-                    color: Colors.white,
-                  ),
-                  const SizedBox(width: 12.0),
-                  Expanded(
-                    child: BodyText(
-                      text: systemMessage.content,
+            return Padding(
+              padding: const EdgeInsets.all(16.0), // Outside padding
+              child: Container(
+                width: double.infinity, // Stretch across the screen
+                decoration: BoxDecoration(
+                  color: _getMessageColor(systemMessage.type),
+                  borderRadius: BorderRadius.circular(20), // Rounded corners
+                ),
+                padding: const EdgeInsets.symmetric(
+                    vertical: 24.0, horizontal: 16.0), // Internal padding
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      _getMessageIcon(systemMessage.type),
                       color: Colors.white,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 12.0),
+                    Expanded(
+                      child: BodyText(
+                        text: systemMessage.content,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }).toList(),

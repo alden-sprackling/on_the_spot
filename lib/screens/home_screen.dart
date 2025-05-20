@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:on_the_spot/providers/tier_provider.dart';
 import 'package:on_the_spot/providers/user_provider.dart';
+import 'package:on_the_spot/theme/app_colors.dart';
+import 'package:on_the_spot/widgets/bottom_popup.dart';
 import 'package:on_the_spot/widgets/icons/user_icon_button.dart';
+import 'package:on_the_spot/widgets/text/body_text.dart';
+import 'package:on_the_spot/widgets/user_widget.dart';
 import 'package:provider/provider.dart';
 import 'base_screen.dart';
 import 'play_screen.dart';
@@ -40,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return BaseScreen(
-      leadingWidth: 150,
+      leadingWidth: 200,
       actions: [],
       leading: Consumer<UserProvider>(
         builder: (context, userProvider, _) {
@@ -53,7 +57,27 @@ class _HomeScreenState extends State<HomeScreen> {
             name: user.name!,
             iq: user.iq,
             onPressed: () {
-              // Optionally handle tap
+              BottomPopup.show(
+                context: context,
+                children: [
+                  UserWidget(
+                    onPictureTap: () => Navigator.pushNamed(
+                      context,
+                      '/set_profile_picture',
+                      arguments: {'isEditing': true},
+                    ),
+                    onTextTap: () => Navigator.pushNamed(
+                      context,
+                      '/set_name',
+                      arguments: {'isEditing': true},
+                    ),
+                  ),
+                  BodyText(
+                    text: 'Tap field to edit',
+                    color: AppColors.lightGrey,
+                  )
+                ],
+              );
             },
           );
         },

@@ -40,6 +40,28 @@ class _PlayScreenState extends State<PlayScreen> {
     }
   }
 
+  Future<void> _autoJoinGame() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final messageProvider =
+        Provider.of<MessageProvider>(context, listen: false);
+    if (userProvider.user == null) return;
+
+    final lobbyProvider = Provider.of<LobbyProvider>(context, listen: false);
+    try {
+      await lobbyProvider.autoJoinLobby(userProvider.user!.id);
+      if (!mounted) return;
+      Navigator.pushNamed(context, '/lobby');
+    } catch (e) {
+      // Show an error message on failure
+      messageProvider.addMessage(
+        Message(
+          content: "Unable to auto join game lobby: $e",
+          type: MessageType.error,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // This Column is exactly what you passed as columnWidgets before
@@ -52,14 +74,7 @@ class _PlayScreenState extends State<PlayScreen> {
             Button(
               backgroundColor: AppColors.intermediateOrangeRed,
               text: "QUICKPLAY",
-              onPressed: () {
-                // Handle QUICKPLAY
-              },
-            ),
-            Button(
-              backgroundColor: AppColors.primaryColor,
-              text: "CREATE GAME",
-              onPressed: () => _createGame(),
+              onPressed: () => _autoJoinGame(),
             ),
             Button(
               backgroundColor: AppColors.secondaryColor,
@@ -67,6 +82,11 @@ class _PlayScreenState extends State<PlayScreen> {
               onPressed: () {
                 Navigator.pushNamed(context, '/join_game');
               },
+            ),
+            Button(
+              backgroundColor: AppColors.primaryColor,
+              text: "CREATE GAME",
+              onPressed: () => _createGame(),
             ),
           ],
         ),

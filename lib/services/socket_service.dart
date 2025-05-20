@@ -17,6 +17,7 @@ class SocketService {
   final StreamController<List<Map<String, dynamic>>> _roundLeaderboardController = StreamController.broadcast();
   final StreamController<List<Map<String, dynamic>>> _finalLeaderboardController = StreamController.broadcast();
   final StreamController<Map<String, dynamic>> _chatMessageController = StreamController.broadcast();
+  final StreamController<String> _errorController = StreamController.broadcast();
 
   /// Stream of lobby updates: contains { players, hostId, isPublic }
   Stream<Map<String, dynamic>> get lobbyUpdate => _lobbyUpdateController.stream;
@@ -40,6 +41,8 @@ class SocketService {
   Stream<List<Map<String, dynamic>>> get finalLeaderboard => _finalLeaderboardController.stream;
   /// Stream emitting new chat messages: { id, gameId, userId, message, sentAt }
   Stream<Map<String, dynamic>> get chatMessage => _chatMessageController.stream;
+  /// Stream emitting errors: { error }
+  Stream<String> get onError => _errorController.stream;
 
   SocketService(String uri, String token)
       : _socket = io.io(
@@ -83,6 +86,9 @@ class SocketService {
     });
     _socket.on('chatMessage', (data) {
       _chatMessageController.add(Map<String, dynamic>.from(data));
+    });
+    _socket.on('error', (data) {
+      _errorController.add(data as String);
     });
   }
 
@@ -140,5 +146,6 @@ class SocketService {
     _roundLeaderboardController.close();
     _finalLeaderboardController.close();
     _chatMessageController.close();
+    _errorController.close();
   }
 }

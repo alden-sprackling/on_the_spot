@@ -24,7 +24,10 @@ class SetProfilePictureScreenState extends State<SetProfilePictureScreen> {
   @override
   void initState() {
     super.initState();
-    _loadPictures();
+    // Delay loading pictures until after the first frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadPictures();
+    });
   }
 
   Future<void> _loadPictures() async {
@@ -45,6 +48,8 @@ class SetProfilePictureScreenState extends State<SetProfilePictureScreen> {
   }
 
   Future<void> _setPicture() async {
+    final args = ModalRoute.of(context)?.settings.arguments as Map?;
+    final isEditing = args != null && args['isEditing'] == true;
     final messageProvider =
         Provider.of<MessageProvider>(context, listen: false);
     final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -59,16 +64,20 @@ class SetProfilePictureScreenState extends State<SetProfilePictureScreen> {
       );
 
       userProvider.fetchProfile();
-      if (userProvider.user?.name == null) {
+      if (isEditing) {
         if (!mounted) return;
-        Navigator.pushReplacementNamed(context, '/set_name');
+        Navigator.pop(context);
       } else {
         if (!mounted) return;
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/home',
-          (Route<dynamic> route) => false,
-        );
+        if (userProvider.user?.name == null) {
+          Navigator.pushReplacementNamed(context, '/set_name');
+        } else {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/home',
+            (Route<dynamic> route) => false,
+          );
+        }
       }
     } catch (e) {
       messageProvider.addMessage(
@@ -94,7 +103,8 @@ class SetProfilePictureScreenState extends State<SetProfilePictureScreen> {
             builder: (context, constraints) {
               double width = constraints.maxWidth;
               return Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+                // Changed from center to start to left-align the label.
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Padding(
                     padding: EdgeInsets.only(bottom: 24),

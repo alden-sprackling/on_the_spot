@@ -23,6 +23,8 @@ class SetNameScreenState extends State<SetNameScreen> {
   /// Calls updateProfile from the UserProvider with the text from _nameController.
   /// If the update succeeds, navigates appropriately; otherwise, shows an error message.
   Future<void> _setName() async {
+    final args = ModalRoute.of(context)?.settings.arguments as Map?;
+    final isEditing = args != null && args['isEditing'] == true;
     final messageProvider =
         Provider.of<MessageProvider>(context, listen: false);
     final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -37,16 +39,20 @@ class SetNameScreenState extends State<SetNameScreen> {
       );
 
       userProvider.fetchProfile();
-      if (userProvider.user?.profilePic == null) {
+      if (isEditing) {
         if (!mounted) return;
-        Navigator.pushReplacementNamed(context, '/set_profile_picture');
+        Navigator.pop(context);
       } else {
         if (!mounted) return;
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/home',
-          (Route<dynamic> route) => false,
-        );
+        if (userProvider.user?.profilePic == null) {
+          Navigator.pushReplacementNamed(context, '/set_profile_picture');
+        } else {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/home',
+            (Route<dynamic> route) => false,
+          );
+        }
       }
     } catch (e) {
       messageProvider.addMessage(
@@ -69,8 +75,8 @@ class SetNameScreenState extends State<SetNameScreen> {
           flex: 3,
           child: InputField(
             controller: _nameController,
-            labelText: 'How do you want to be seen by other players?',
-            hintText: 'Enter username',
+            labelText: 'Enter username',
+            hintText: 'RANDOM123',
             keyboardType: TextInputType.text,
             inputFormatters: [UsernameFormatter()],
             maxLength: 12,

@@ -23,6 +23,9 @@ class AppTheme {
         selectedItemColor: Colors.grey,
         unselectedItemColor: AppColors.lightGrey,
       ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: AppColors.primaryColor, // your desired color
+      ),
     );
   }
 }

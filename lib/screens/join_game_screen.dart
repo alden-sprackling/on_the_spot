@@ -32,7 +32,7 @@ class _JoinGameScreenState extends State<JoinGameScreen> {
       await lobbyProvider.joinLobby(_controller.text.trim(), userProvider.user!.id);
       // Navigate to the lobby screen after successful creation
       if (!mounted) return;
-      Navigator.pushNamed(context, '/lobby');
+      Navigator.pushReplacementNamed(context, '/lobby');
     } catch (e) {
       // Show an error message on failure
       messageProvider.addMessage(
@@ -57,7 +57,8 @@ class _JoinGameScreenState extends State<JoinGameScreen> {
           flex: 3,
           child: InputField(
             controller: _controller,
-            hintText: "Enter game code",
+            labelText: 'Enter game code',
+            hintText: "ABC123",
           ),
         ),
         Expanded(

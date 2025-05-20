@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Rishi's iPhone 15 Pro Max (Debug)",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "00008130-0009683E0A42001C", // Rishi's iPhone 15 Pro Max UDID
+            "flutterMode": "debug"
+        },
+        {
+            "name": "Alden’s iPhone (Debug)",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "00008110-00192C361A11401E", // Alden's iPhone UDID
+            "flutterMode": "debug"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "All iPhones (Debug)",
+            "configurations": [
+                "Rishi's iPhone 15 Pro Max (Debug)",
+                "Alden’s iPhone (Debug)"
+            ]
+        }
+    ]
+}

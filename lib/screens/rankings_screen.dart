@@ -1,12 +1,39 @@
-// lib/src/screens/rankings_screen.dart
 import 'package:flutter/material.dart';
 import 'package:on_the_spot/providers/tier_provider.dart';
 import 'package:on_the_spot/theme/app_colors.dart';
-import 'package:provider/provider.dart';
 import 'package:on_the_spot/widgets/field_widget.dart';
+import 'package:provider/provider.dart';
 
-class RankingsScreen extends StatelessWidget {
+class RankingsScreen extends StatefulWidget {
   const RankingsScreen({super.key});
+
+  @override
+  State<RankingsScreen> createState() => _RankingsScreenState();
+}
+
+class _RankingsScreenState extends State<RankingsScreen> {
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _currentTierKey = GlobalKey();
+  bool _scrolledToCurrent = false;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToCurrentTier() {
+    if (!_scrolledToCurrent && _currentTierKey.currentContext != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Scrollable.ensureVisible(
+          _currentTierKey.currentContext!,
+          duration: const Duration(milliseconds: 300),
+          alignment: 0.5,
+        );
+        _scrolledToCurrent = true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,77 +50,96 @@ class RankingsScreen extends StatelessWidget {
         }
 
         // Find the max count for relative sizing
-        final maxCount = tiers.map((t) => t.count).fold<int>(0, (prev, c) => c > prev ? c : prev);
+        final maxCount = tiers.fold<int>(
+          0,
+          (prev, tier) => tier.count > prev ? tier.count : prev,
+        );
 
-        return SingleChildScrollView(
-          child: FieldWidget(
-            title: 'RANKINGS',
-            children: tiers.map((tier) {
-              final ratio = maxCount > 0 ? tier.count / maxCount : 0.0;
-              final isCurrent = (myTier != null && myTier == tier.tier);
-              // Choose colors based on current user's tier
-              final backgroundColor = isCurrent
-                  ? Colors.red.withAlpha((0.2 * 255).toInt())
-                  : AppColors.primaryColor.withAlpha((0.2 * 255).toInt());
-              final fillColor = isCurrent
-                  ? Colors.red
-                  : AppColors.primaryColor;
+        // Build the list of tier widgets as rows with a fixed label area and a horizontal bar
+        final tierWidgets = tiers.map((tier) {
+          final ratio = maxCount > 0 ? tier.count / maxCount : 0.0;
+          final isCurrent = (myTier != null && myTier == tier.tier);
+          final backgroundColor =
+              AppColors.primaryColor.withAlpha((0.2 * 255).toInt());
+          final fillColor = AppColors.primaryColor;
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Label: min above max
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+          return Padding(
+            key: isCurrent ? _currentTierKey : null,
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Fixed-width label column on the left
+                SizedBox(
+                  width: 80,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        tier.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      Text(
+                        'IQ: ${tier.minIq} - ${tier.maxIq}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16.0),
+                // Horizontal bar on the right
+                Expanded(
+                  child: Container(
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: backgroundColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Stack(
+                      alignment: Alignment.centerLeft,
                       children: [
-                        Text('IQ: ${tier.minIq}', style: const TextStyle(fontSize: 12)),
-                        const SizedBox(height: 2),
-                        Text('IQ: ${tier.maxIq}', style: const TextStyle(fontSize: 12)),
+                        FractionallySizedBox(
+                          widthFactor: ratio,
+                          heightFactor: 1,
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: fillColor,
+                              borderRadius: BorderRadius.circular(12),
+                              border: isCurrent
+                                  ? Border.all(color: Colors.black, width: 2.0)
+                                  : null,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
-                    const SizedBox(width: 8),
-                    // Bar
-                    Expanded(
-                      child: Stack(
-                        alignment: Alignment.centerLeft,
-                        children: [
-                          Container(
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: backgroundColor,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          FractionallySizedBox(
-                            widthFactor: ratio,
-                            child: Container(
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: fillColor,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                          // Count label on left inside bar
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Text(
-                              '${tier.count}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              );
-            }).toList(),
+              ],
+            ),
+          );
+        }).toList();
+
+        // Ensure we scroll to the current tier once built
+        WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToCurrentTier());
+
+        return SingleChildScrollView(
+          controller: _scrollController,
+          clipBehavior: Clip.none,
+          child: FieldWidget(
+            title: "RANKINGS",
+            children: [
+              Column(
+                children: tierWidgets,
+              ),
+            ],
           ),
         );
       },

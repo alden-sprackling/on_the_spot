@@ -16,6 +16,17 @@ import '../models/game_player.dart';
 import '../models/question.dart';
 import 'user_provider.dart';
 
+enum RoundState {
+  idle,
+  roundIntroduction,
+  categoryVoteUpdate,
+  categoryChosen,
+  question,
+  answerResult,
+  roundLeaderboard,
+  finalLeaderboard,
+}
+
 /// Manages game state, real-time updates, and actions via services and SocketService
 class GameProvider extends ChangeNotifier {
   final CategoryService _categoryService = CategoryService();
@@ -37,8 +48,8 @@ class GameProvider extends ChangeNotifier {
   List<GamePlayer> _roundLeaderboard = [];
   List<GamePlayer> _finalLeaderboard = [];
   final List<ChatMessage> _chatMessages = [];
-  bool _isLoading = false;
   bool _answered = false;
+  RoundState _roundState = RoundState.idle;
 
   GameProvider(this._userProvider, this._messageProvider);
 
@@ -53,12 +64,11 @@ class GameProvider extends ChangeNotifier {
   List<GamePlayer> get roundLeaderboard => List.unmodifiable(_roundLeaderboard);
   List<GamePlayer> get finalLeaderboard => List.unmodifiable(_finalLeaderboard);
   List<ChatMessage> get chatMessages => List.unmodifiable(_chatMessages);
-  bool get isLoading => _isLoading;
   bool get hasAnswered => _answered;
+  RoundState get roundState => _roundState;
 
   /// Initialize game: set gameId, fetch categories, connect socket, and register listeners
   Future<void> initGame(String gameId) async {
-    _setLoading(true);
     try {
       _gameId = gameId;
       // initial categories
@@ -71,6 +81,7 @@ class GameProvider extends ChangeNotifier {
       _socket = SocketService(Endpoints.wsUrl, token);
 
       _socket!.roundIntroduction.listen((data) {
+        _roundState = RoundState.roundIntroduction;
         _round = data['roundNumber'] as int;
         _difficulty = data['difficulty'] as int;
         _voteTally.clear();
@@ -80,32 +91,38 @@ class GameProvider extends ChangeNotifier {
       });
 
       _socket!.categoryVoteUpdate.listen((data) {
+        _roundState = RoundState.categoryVoteUpdate;
         final votes = data['votes'] as List<dynamic>;
         _voteTally = {for (var v in votes) v['categoryId'] as String: v['count'] as int};
         notifyListeners();
       });
 
       _socket!.categoryChosen.listen((data) {
+        _roundState = RoundState.categoryChosen;
         _chosenCategory = data['categoryId'] as String;
         notifyListeners();
       });
 
       _socket!.playerUp.listen((data) async {
+        _roundState = RoundState.question;
         // when it's this player's turn, nothing to do here
       });
 
       _socket!.question.listen((data) {
+        _roundState = RoundState.question;
         _currentQuestion = Question.fromJson(data);
         notifyListeners();
       });
 
       _socket!.answerResult.listen((data) {
+        _roundState = RoundState.answerResult;
         _answerResult = data;
         _answered = true;
         notifyListeners();
       });
 
       _socket!.roundLeaderboard.listen((data) {
+        _roundState = RoundState.roundLeaderboard;
         _roundLeaderboard = (data as List<dynamic>)
             .map((e) => GamePlayer.fromJson(e as Map<String, dynamic>))
             .toList();
@@ -113,6 +130,7 @@ class GameProvider extends ChangeNotifier {
       });
 
       _socket!.finalLeaderboard.listen((data) {
+        _roundState = RoundState.finalLeaderboard;
         _finalLeaderboard = (data as List<dynamic>)
             .map((e) => GamePlayer.fromJson(e as Map<String, dynamic>))
             .toList();
@@ -133,9 +151,7 @@ class GameProvider extends ChangeNotifier {
       });
     } catch (e) {
       throw ApiError('Failed to initialize game');
-    } finally {
-      _setLoading(false);
-    }
+    } 
   }
 
   /// Vote for a category in current round
@@ -172,11 +188,6 @@ class GameProvider extends ChangeNotifier {
     } catch (e) {
       throw ApiError('Failed to send message');
     }
-  }
-
-  void _setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
   }
 
   @override

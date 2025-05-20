@@ -33,11 +33,21 @@ class LobbyService {
   }
 
   /// Join an existing lobby
-  Future<void> joinLobby(String code, String userId) async {
-    await _client.post(
+  Future<Lobby> joinLobby(String code, String userId) async {
+    final Response<Map<String, dynamic>> response = await _client.post(
       Endpoints.joinLobby.replaceAll('{code}', code),
       data: {'userId': userId},
     );
+    return Lobby.fromJson(response.data!);
+  }
+
+  /// Auto join a lobby
+  Future<Lobby> autoJoinLobby(String userId) async {
+    final Response<Map<String, dynamic>> response = await _client.post(
+      Endpoints.autoJoinLobby,
+      data: {'userId': userId},
+    );
+    return Lobby.fromJson(response.data!);
   }
 
   /// Leave a lobby

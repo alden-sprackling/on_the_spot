@@ -29,7 +29,7 @@ class InputField extends StatelessWidget {
         double inputHeight = inputWidth * 0.2;
 
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (labelText != null && labelText!.isNotEmpty)
               Padding(
@@ -47,7 +47,7 @@ class InputField extends StatelessWidget {
                 inputFormatters: inputFormatters,
                 maxLength: maxLength, 
                 autofocus: true,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,

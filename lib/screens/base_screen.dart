@@ -11,6 +11,7 @@ class BaseScreen extends StatefulWidget {
   final Widget? bottomNavigationBar; // Optional bottom navigation
   final Color bodyBackgroundColor; // Optional body background color
   final double leadingWidth; // Optional leading width
+  final String? appBarTitle; // Optional app bar title
 
   const BaseScreen({
     super.key,
@@ -23,6 +24,7 @@ class BaseScreen extends StatefulWidget {
     this.bottomNavigationBar,
     this.bodyBackgroundColor = Colors.white,
     this.leadingWidth = 50.0, // Default value
+    this.appBarTitle,
   });
 
   @override
@@ -43,6 +45,15 @@ class BaseScreenState extends State<BaseScreen> {
                   ? Padding(
                       padding: const EdgeInsets.only(left: 16.0),
                       child: widget.leading,
+                    )
+                  : null,
+              title: widget.appBarTitle != null
+                  ? Text(
+                      widget.appBarTitle!,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     )
                   : null,
               actions: widget.actions != null

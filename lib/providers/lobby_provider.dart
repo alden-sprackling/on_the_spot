@@ -16,12 +16,14 @@ class LobbyProvider extends ChangeNotifier {
   List<LobbyPlayer> _players = [];
   bool _isLoading = false;
   bool _gameStarted = false;
+  String? _gameId;
 
   Lobby? get lobby => _lobby;
   List<LobbyPlayer> get players => List.unmodifiable(_players);
   bool get isLoading => _isLoading;
   bool get gameStarted => _gameStarted;
   SocketService? get socketService => _socketService;
+  String? get gameId => _gameId;
 
   LobbyProvider(this._userProvider);
 
@@ -56,14 +58,29 @@ class LobbyProvider extends ChangeNotifier {
   Future<void> joinLobby(String code, String userId) async {
     _setLoading(true);
     try {
-      await _lobbyService.joinLobby(code, userId);
-      final Lobby updated = await _lobbyService.getLobby(code);
+      final Lobby updated = await _lobbyService.joinLobby(code, userId);
       _lobby = updated;
       _players = updated.players;
       notifyListeners();
       await _initSocket(code);
     } catch (e) {
       throw ApiError('Failed to join lobby');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Auto join a lobby, refresh state, and connect socket
+  Future<void> autoJoinLobby(String userId) async {
+    _setLoading(true);
+    try {
+      final Lobby updated = await _lobbyService.autoJoinLobby(userId);
+      _lobby = updated;
+      _players = updated.players;
+      notifyListeners();
+      await _initSocket(_lobby!.code);
+    } catch (e) {
+      throw ApiError('Failed to auto join lobby');
     } finally {
       _setLoading(false);
     }
@@ -129,7 +146,8 @@ class LobbyProvider extends ChangeNotifier {
       notifyListeners();
     });
     // Listen for game start
-    _socketService!.gameStarted.listen((_) {
+    _socketService!.gameStarted.listen((data) {
+      _gameId = data['gameId'] as String;  
       _gameStarted = true;
       notifyListeners();
     });

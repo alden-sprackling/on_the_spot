@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:on_the_spot/theme/app_colors.dart';
 
 class ToggleIcon extends StatelessWidget {
   final bool isPublic;
@@ -14,14 +15,17 @@ class ToggleIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white,
+        backgroundColor: isPublic ? AppColors.lightGrey : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(40),
+        ),
       ),
       onPressed: onPressed,
       child: Text(
         isPublic ? 'PUBLIC' : 'PRIVATE',
-        style: const TextStyle(
+        style: TextStyle(
           fontWeight: FontWeight.bold,
-          color: Colors.red,
+          color: isPublic ? Colors.white : AppColors.lightGrey,
         ),
       ),
     );
