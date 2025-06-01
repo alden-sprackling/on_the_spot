@@ -16,6 +16,7 @@ class CategoryService {
         Endpoints.getAvailableCategories.replaceAll('{gameId}', gameId),
       );
       final data = response.data!;
+      print('Available categories: $data');
       return data
           .map((item) => Category.fromJson(item as Map<String, dynamic>))
           .toList();

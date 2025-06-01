@@ -13,9 +13,9 @@ String validatePhoneNumber(String phoneNumber) {
 }
 
 String validateUsername(String username) {
-  // Check if the username is < 3 or > 12 characters long
-  if (username.length < 3 || username.length > 12) {
-    throw InputError("Username must be between 3 and 12 characters long");
+  // Check if the username is < 3 or > 8 characters long
+  if (username.length < 3 || username.length > 8) {
+    throw InputError("Username must be between 3 and 8 characters long");
   }
 
   // Check if the username contains spaces

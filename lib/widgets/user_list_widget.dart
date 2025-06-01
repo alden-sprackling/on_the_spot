@@ -24,7 +24,7 @@ class UserListWidget extends StatelessWidget {
   final String name;
   final int iq;
   final int? gamePoints;
-  final int? iqAdjustment;
+  final int? iqDelta;
   final bool isHost;
   final VoidCallback? onPressed;
 
@@ -35,7 +35,7 @@ class UserListWidget extends StatelessWidget {
     required this.name,
     required this.iq,
     this.gamePoints,
-    this.iqAdjustment,
+    this.iqDelta,
     this.isHost = false,
     this.onPressed,
   });
@@ -85,9 +85,9 @@ class UserListWidget extends StatelessWidget {
             ),
           ],
           // Right side: game points and IQ adjustments (if any)
-          if (gamePoints != null || iqAdjustment != null)
+          if (gamePoints != null || iqDelta != null)
             const SizedBox(width: 8.0),
-          if (gamePoints != null || iqAdjustment != null)
+          if (gamePoints != null || iqDelta != null)
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -96,9 +96,9 @@ class UserListWidget extends StatelessWidget {
                     'Points: $gamePoints',
                     style: const TextStyle(fontSize: 14),
                   ),
-                if (iqAdjustment != null)
+                if (iqDelta != null)
                   Text(
-                    'IQ Adj: $iqAdjustment',
+                    'IQ Adj: $iqDelta',
                     style: const TextStyle(fontSize: 14),
                   ),
               ],

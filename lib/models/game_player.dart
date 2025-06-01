@@ -1,28 +1,32 @@
 // lib/src/models/game_player.dart
 class GamePlayer {
-  final String gameId;
   final String userId;
   final int pointsTotal;
-  final int? finalIq;
+  final int? oldIQ;
+  final int? iqDelta;
+  final int? newIQ;
 
   GamePlayer({
-    required this.gameId,
     required this.userId,
     required this.pointsTotal,
-    this.finalIq,
+    this.oldIQ,
+    this.iqDelta,
+    this.newIQ,
   });
 
   factory GamePlayer.fromJson(Map<String, dynamic> json) => GamePlayer(
-        gameId: json['game_id'] as String,
-        userId: json['user_id'] as String,
-        pointsTotal: json['points_total'] as int,
-        finalIq: json['final_iq'] as int?,
+        userId: json['userId'] as String,
+        pointsTotal: json['pointsTotal'] as int,
+        oldIQ: json['oldIQ'] as int?,
+        iqDelta: json['iqDelta'] as int?,
+        newIQ: json['finalIQ'] as int?,
       );
 
   Map<String, dynamic> toJson() => {
-        'game_id': gameId,
-        'user_id': userId,
-        'points_total': pointsTotal,
-        'final_iq': finalIq,
+        'userId': userId,
+        'pointsTotal': pointsTotal,
+        'oldIQ': oldIQ,
+        'iqDelta': iqDelta,
+        'finalIQ': newIQ,
       };
 }

@@ -3,6 +3,7 @@ import 'package:on_the_spot/models/message.dart';
 import 'package:on_the_spot/providers/lobby_provider.dart';
 import 'package:on_the_spot/providers/message_provider.dart';
 import 'package:on_the_spot/providers/user_provider.dart';
+import 'package:on_the_spot/utils/formatters.dart';
 import 'package:provider/provider.dart';
 import '../widgets/icons/back_icon_button.dart';
 import '../widgets/input_fields/input_field.dart';
@@ -57,8 +58,9 @@ class _JoinGameScreenState extends State<JoinGameScreen> {
           flex: 3,
           child: InputField(
             controller: _controller,
-            labelText: 'Enter game code',
+            labelText: 'Enter the game code',
             hintText: "ABC123",
+            inputFormatters: [CodeFormatter()],
           ),
         ),
         Expanded(

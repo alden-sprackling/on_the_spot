@@ -1,5 +1,33 @@
 import 'package:flutter/services.dart';
 
+class CodeFormatter extends TextInputFormatter {
+  final int maxLength;
+
+  CodeFormatter({this.maxLength = 6});
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Remove any characters that are not letters or numbers.
+    String newText = newValue.text.replaceAll(RegExp(r'[^A-Za-z0-9]'), '');
+    
+    // Convert to uppercase.
+    newText = newText.toUpperCase();
+
+    // Limit the length to maxLength.
+    if (newText.length > maxLength) {
+      newText = newText.substring(0, maxLength);
+    }
+
+    return newValue.copyWith(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newText.length),
+    );
+  }
+}
+
 class AuthCodeFormatter extends TextInputFormatter {
   final int maxLength;
 
@@ -62,7 +90,7 @@ class PhoneNumberFormatter extends TextInputFormatter {
 }
 
 class UsernameFormatter extends TextInputFormatter {
-  final int maxLength = 12;
+  final int maxLength = 8;
 
   UsernameFormatter();
 

@@ -36,13 +36,16 @@ class BottomPopup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final defaultPadding = EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 16);
+
     return Container(
       height: height,
-      padding: padding ?? const EdgeInsets.fromLTRB(16, 16, 16, 50),
+      padding: padding ?? defaultPadding,
       decoration: BoxDecoration(
         color: Theme.of(context).canvasColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.black26,
             blurRadius: 10,

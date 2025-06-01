@@ -14,8 +14,8 @@ class SocketService {
   final StreamController<Map<String, dynamic>> _playerUpController = StreamController.broadcast();
   final StreamController<Map<String, dynamic>> _questionController = StreamController.broadcast();
   final StreamController<Map<String, dynamic>> _answerResultController = StreamController.broadcast();
-  final StreamController<List<Map<String, dynamic>>> _roundLeaderboardController = StreamController.broadcast();
-  final StreamController<List<Map<String, dynamic>>> _finalLeaderboardController = StreamController.broadcast();
+  final StreamController<Map<String, dynamic>> _roundLeaderboardController = StreamController.broadcast();
+  final StreamController<Map<String, dynamic>> _finalLeaderboardController = StreamController.broadcast();
   final StreamController<Map<String, dynamic>> _chatMessageController = StreamController.broadcast();
   final StreamController<String> _errorController = StreamController.broadcast();
 
@@ -36,9 +36,9 @@ class SocketService {
   /// Stream emitting answer results: { userId, correct, pointsAwarded }
   Stream<Map<String, dynamic>> get answerResult => _answerResultController.stream;
   /// Stream emitting round leaderboard: List<{ userId, pointsTotal, rank }>
-  Stream<List<Map<String, dynamic>>> get roundLeaderboard => _roundLeaderboardController.stream;
+  Stream<Map<String, dynamic>> get roundLeaderboard => _roundLeaderboardController.stream;
   /// Stream emitting final leaderboard: List<{ userId, pointsTotal, oldIQ, iqDelta, newIQ }>
-  Stream<List<Map<String, dynamic>>> get finalLeaderboard => _finalLeaderboardController.stream;
+  Stream<Map<String, dynamic>> get finalLeaderboard => _finalLeaderboardController.stream;
   /// Stream emitting new chat messages: { id, gameId, userId, message, sentAt }
   Stream<Map<String, dynamic>> get chatMessage => _chatMessageController.stream;
   /// Stream emitting errors: { error }
@@ -64,7 +64,7 @@ class SocketService {
       _roundIntroductionController.add(Map<String, dynamic>.from(data));
     });
     _socket.on('categoryVoteUpdate', (data) {
-      _categoryVoteUpdateController.add({'votes': List<Map<String, dynamic>>.from(data)});
+      _categoryVoteUpdateController.add(Map<String, dynamic>.from(data));
     });
     _socket.on('categoryChosen', (data) {
       _categoryChosenController.add(Map<String, dynamic>.from(data));
@@ -79,10 +79,10 @@ class SocketService {
       _answerResultController.add(Map<String, dynamic>.from(data));
     });
     _socket.on('roundLeaderboard', (data) {
-      _roundLeaderboardController.add(List<Map<String, dynamic>>.from(data));
+      _roundLeaderboardController.add(Map<String, dynamic>.from(data));
     });
     _socket.on('finalLeaderboard', (data) {
-      _finalLeaderboardController.add(List<Map<String, dynamic>>.from(data));
+      _finalLeaderboardController.add(Map<String, dynamic>.from(data));
     });
     _socket.on('chatMessage', (data) {
       _chatMessageController.add(Map<String, dynamic>.from(data));
@@ -119,11 +119,13 @@ class SocketService {
     });
   }
 
-  void submitAnswer(String gameId, int round, String userId, String answer) {
+  void submitAnswer(String gameId, int round, String userId, String questionId, String categoryId, String answer) {
     _socket.emit('submitAnswer', {
       'gameId': gameId,
       'round': round,
       'userId': userId,
+      'questionId': questionId,
+      'categoryId': categoryId,
       'answer': answer,
     });
   }

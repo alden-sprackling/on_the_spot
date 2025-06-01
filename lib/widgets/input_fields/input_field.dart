@@ -9,7 +9,8 @@ class InputField extends StatelessWidget {
   final String? labelText;
   final TextInputType keyboardType;
   final List<TextInputFormatter>? inputFormatters;
-  final int? maxLength; 
+  final int? maxLength;
+  final ValueChanged<String>? onSubmitted; // NEW
 
   const InputField({
     required this.controller,
@@ -17,7 +18,8 @@ class InputField extends StatelessWidget {
     this.labelText,
     this.keyboardType = TextInputType.text,
     this.inputFormatters,
-    this.maxLength, 
+    this.maxLength,
+    this.onSubmitted, // NEW
     super.key,
   });
 
@@ -45,7 +47,7 @@ class InputField extends StatelessWidget {
                 controller: controller,
                 keyboardType: keyboardType,
                 inputFormatters: inputFormatters,
-                maxLength: maxLength, 
+                maxLength: maxLength,
                 autofocus: true,
                 style: const TextStyle(
                   fontSize: 32,
@@ -64,6 +66,7 @@ class InputField extends StatelessWidget {
                   border: InputBorder.none,
                   counterText: '', // Hide the default counter text
                 ),
+                onSubmitted: onSubmitted, // NEW
               ),
             ),
           ],

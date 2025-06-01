@@ -16,17 +16,17 @@ class ChatMessage {
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
         id: json['id'] as String,
-        gameId: json['game_id'] as String,
-        userId: json['user_id'] as String,
+        gameId: json['gameId'] as String,
+        userId: json['userId'] as String,
         message: json['message'] as String,
-        sentAt: DateTime.parse(json['sent_at'] as String),
+        sentAt: DateTime.parse(json['sentAt'] as String),
       );
 
   Map<String, dynamic> toJson() => {
         'id': id,
-        'game_id': gameId,
-        'user_id': userId,
+        'gameId': gameId,
+        'userId': userId,
         'message': message,
-        'sent_at': sentAt.toIso8601String(),
+        'sentAt': sentAt.toIso8601String(),
       };
 }

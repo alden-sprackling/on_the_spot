@@ -96,7 +96,6 @@ class SetProfilePictureScreenState extends State<SetProfilePictureScreen> {
       leading: null,
       actions: null,
       columnWidgets: [
-        const Spacer(flex: 1),
         Expanded(
           flex: 3,
           child: LayoutBuilder(

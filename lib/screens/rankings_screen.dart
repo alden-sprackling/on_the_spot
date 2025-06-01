@@ -50,10 +50,7 @@ class _RankingsScreenState extends State<RankingsScreen> {
         }
 
         // Find the max count for relative sizing
-        final maxCount = tiers.fold<int>(
-          0,
-          (prev, tier) => tier.count > prev ? tier.count : prev,
-        );
+        final maxCount = tiers.fold(0, (sum, tier) => sum + tier.count);
 
         // Build the list of tier widgets as rows with a fixed label area and a horizontal bar
         final tierWidgets = tiers.map((tier) {

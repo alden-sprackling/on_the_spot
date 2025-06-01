@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:on_the_spot/screens/enter_code_screen.dart';
 import 'package:on_the_spot/utils/formatters.dart';
 import 'package:on_the_spot/utils/validators.dart';
-import 'package:on_the_spot/widgets/icons/info_icon_button.dart';
 import 'package:provider/provider.dart';
 import '../models/message.dart';
 import '../providers/auth_provider.dart';
@@ -64,7 +63,6 @@ class EnterPhoneNumberScreenState extends State<EnterPhoneNumberScreen> {
     return BaseScreen(
       leading: null,
       actions: [
-        InfoIconButton(),
       ],
       columnWidgets: [
         Expanded(
