@@ -19,7 +19,7 @@ class MessageIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       icon: Icon(
-        Icons.message_rounded,
+        Icons.message_outlined,
         color: iconColor ?? AppColors.lightGrey,
         size: iconSize ?? 50.0,
       ),

@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:on_the_spot/models/game_player.dart';
+import 'package:on_the_spot/models/lobby_player.dart';
 import 'package:on_the_spot/providers/game_provider.dart';
 import 'package:on_the_spot/providers/lobby_provider.dart';
+import 'package:on_the_spot/providers/user_provider.dart';
 import 'package:on_the_spot/theme/app_colors.dart';
 import 'package:on_the_spot/widgets/buttons/button.dart';
 import 'package:on_the_spot/widgets/field_widget.dart';
 import 'package:on_the_spot/widgets/user_list_widget.dart';
+import 'package:provider/provider.dart';
 
-class ShowFinalLeaderboard extends StatelessWidget {
+class ShowFinalLeaderboard extends StatefulWidget {
   final GameProvider gameProv;
   final LobbyProvider lobbyProv;
 
@@ -18,15 +21,37 @@ class ShowFinalLeaderboard extends StatelessWidget {
   });
 
   @override
+  State<ShowFinalLeaderboard> createState() => _ShowFinalLeaderboardState();
+}
+
+class _ShowFinalLeaderboardState extends State<ShowFinalLeaderboard> {
+  @override
+  void initState() {
+    super.initState();
+    // Fetch updated profile info on init.
+    Future.microtask(() {
+      if (!mounted) return;
+      Provider.of<UserProvider>(context, listen: false).fetchProfile();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Get the final leaderboard from GameProvider.
-    final List<GamePlayer> gamePlayers = gameProv.finalLeaderboard;
+    final List<GamePlayer> gamePlayers = widget.gameProv.finalLeaderboard;
     
     // Merge GamePlayer and LobbyPlayer data.
     List<Map<String, dynamic>> leaderboardData = [];
     for (var gamePlayer in gamePlayers) {
-      final lobbyPlayer = lobbyProv.players.firstWhere(
+      final lobbyPlayer = widget.lobbyProv.players.firstWhere(
         (player) => player.id == gamePlayer.userId,
+        orElse: () => LobbyPlayer(
+          phoneNumber: '',
+          id: gamePlayer.userId,
+          name: 'Unknown',
+          profilePicture: '',
+          iq: 0,
+        ),
       );
       leaderboardData.add({
         'userId': gamePlayer.userId,
@@ -79,9 +104,9 @@ class ShowFinalLeaderboard extends StatelessWidget {
         Button(
           text: "HOME",
           onPressed: () {
-            Navigator.pushReplacementNamed(context, '/home');
+            Navigator.pushNamedAndRemoveUntil(context, '/home', (Route<dynamic> route) => false);
           },
-          backgroundColor: AppColors.primaryColor, // You can choose your preferred color.
+          backgroundColor: AppColors.primaryColor,
         ),
       ],
     );

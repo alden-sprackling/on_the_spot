@@ -2,10 +2,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Alex (mobile)",
+            "name": "Susan’s iPhone (mobile)",
             "request": "launch",
             "type": "dart",
-            "deviceId": "00008110-001C5D1A22F2401E",
+            "deviceId": "00008120-0016108C0A10A01E",
             "flutterMode": "debug"
         },
         {
@@ -20,7 +20,7 @@
         {
             "name": "All iPhones (Debug)",
             "configurations": [
-                "Alex (mobile)",
+                "Susan’s iPhone (mobile)",
                 "Alden’s iPhone (Debug)"
             ]
         }

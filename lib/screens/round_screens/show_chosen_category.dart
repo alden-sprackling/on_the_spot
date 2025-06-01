@@ -20,7 +20,7 @@ class ShowChosenCategory extends StatelessWidget {
     return FieldWidget(
       title: "CATEGORY CHOSEN",
       children: [
-        Center(child: BodyText(text: chosenCategory.name, color: Colors.red,)),
+        Center(child: BodyText(text: chosenCategory.name, color: Colors.black,)),
       ],
     );
   }

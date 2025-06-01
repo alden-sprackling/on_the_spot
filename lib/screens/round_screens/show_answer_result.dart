@@ -21,7 +21,7 @@ class ShowAnswerResult extends StatelessWidget {
           Center(
             child: BodyText(
               text: gameProv.answerResult!['correct'] ? 'Correct!' : 'Wrong!',
-              color: Colors.red,
+              color: Colors.black,
             ),
           ),
           Center(

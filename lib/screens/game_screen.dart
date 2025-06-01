@@ -68,7 +68,7 @@ class GameScreen extends StatelessWidget {
             BaseScreen(
               resizeToAvoidBottomInset: false,
               actions: [
-                if (gameProv.roundState != RoundState.finalLeaderboard)
+                if (gameProv.roundState != RoundState.finalLeaderboard && gameProv.roundState != RoundState.roundIntroduction && gameProv.roundState != RoundState.playerUp && gameProv.roundState != RoundState.categoryChosen && gameProv.roundState != RoundState.roundLeaderboard && gameProv.roundState != RoundState.answerResult)
                   TimerIcon(
                     duration: gameProv.duration,
                   ),
@@ -89,6 +89,7 @@ class GameScreen extends StatelessWidget {
                     context: context,
                     children: [
                       InputField(
+                        fillColor: Colors.transparent,
                         controller: messageController,
                         hintText: "Type your message",
                       ),

@@ -85,7 +85,7 @@ class ShowQuestionState extends State<ShowQuestion> {
         ] else
           Center(
             child: BodyText(
-              text: "Waiting for '$waitingName'...",
+              text: "Waiting for $waitingName...",
               color: AppColors.lightGrey,
             ),
           ),

@@ -10,7 +10,8 @@ class InputField extends StatelessWidget {
   final TextInputType keyboardType;
   final List<TextInputFormatter>? inputFormatters;
   final int? maxLength;
-  final ValueChanged<String>? onSubmitted; // NEW
+  final ValueChanged<String>? onSubmitted;
+  final Color fillColor; // NEW: optional fill color with default white
 
   const InputField({
     required this.controller,
@@ -19,7 +20,8 @@ class InputField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.inputFormatters,
     this.maxLength,
-    this.onSubmitted, // NEW
+    this.onSubmitted,
+    this.fillColor = Colors.white, // default fill color white
     super.key,
   });
 
@@ -62,11 +64,11 @@ class InputField extends StatelessWidget {
                     color: AppColors.lightGrey,
                   ),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: fillColor, // Use the optional fill color here
                   border: InputBorder.none,
                   counterText: '', // Hide the default counter text
                 ),
-                onSubmitted: onSubmitted, // NEW
+                onSubmitted: onSubmitted,
               ),
             ),
           ],

@@ -125,7 +125,7 @@ class GameProvider extends ChangeNotifier {
 
       _socket!.playerUp.listen((data) async {
         _playerUp = data['userId'] as String;
-        _duration = Duration(seconds: data['duration'] as int);
+        _duration = Duration(seconds: 3);
         _roundState = RoundState.playerUp;
         notifyListeners();
       });
